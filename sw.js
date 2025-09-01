@@ -1,5 +1,5 @@
-// Minimal offline service worker (no webmanifest needed)
-const VERSION = 'etp-v3';
+// Offline service worker (no webmanifest needed)
+const VERSION = 'etp-v4';
 const ASSETS = [
   './',
   './index.html'
@@ -28,7 +28,6 @@ self.addEventListener('fetch', event => {
 
     try{
       const res = await fetch(req);
-      // Cache same-origin requests
       const url = new URL(req.url);
       if(url.origin === self.location.origin){
         const c = await caches.open(VERSION);
@@ -36,10 +35,10 @@ self.addEventListener('fetch', event => {
       }
       return res;
     }catch(err){
-      // Offline SPA fallback
       if(req.mode === 'navigate') return caches.match('./index.html');
       if(cached) return cached;
       throw err;
     }
   })());
 });
+
