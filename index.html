@@ -1,0 +1,1179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Emerald Task Party</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1c9e57">
+<style>
+  :root{
+    --emerald:#1c9e57;
+    --emerald-dark:#127541;
+    --emerald-deep:#0a4e2b;
+    --panel:#e6f7ee;
+    --panel-dark:#cfeee0;
+    --ink:#103622;
+    --ink-soft:#2b5f44;
+    --ui:#f7fff9;
+    --xp:#9bd5ff;          /* light blue exp bar */
+    --sexp:#ffd64a;        /* yellow SEXP bar */
+    --danger:#c62828;
+    --ok:#2e7d32;
+    --accent:#00c2ff;
+    --shadow:0 3px 0 #0e5c34, 0 6px 12px rgba(0,0,0,.18);
+    --pixel:#0a4e2b;
+    --grid-gap:10px;
+    --slot: 112px;
+    --corner: 6px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:
+    linear-gradient(180deg,#eafff2 0%,#d7ffe9 60%,#c8f9df 100%);
+    color:var(--ink); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Inter, Arial, sans-serif;
+  }
+  header{
+    position:sticky; top:0; z-index:4;
+    background:linear-gradient(180deg,#1c9e57 0%,#157a45 100%);
+    color:#fff; padding:10px 12px; box-shadow:var(--shadow);
+    display:flex; align-items:center; gap:12px;
+  }
+  header h1{font-size:18px; margin:0; letter-spacing:.5px}
+  .badge-pill{background:#fff1; padding:4px 8px; border-radius:999px; font-size:12px; border:1px solid #fff3}
+  nav{
+    display:flex; gap:8px; flex-wrap:wrap; padding:8px 10px;
+    background:#e2f6ec; border-bottom:2px solid var(--emerald-dark);
+  }
+  nav button{
+    appearance:none; border:2px solid var(--emerald-dark); background:var(--panel);
+    padding:6px 10px; border-radius:8px; font-weight:600; color:var(--ink);
+    box-shadow:0 2px 0 var(--emerald-dark); cursor:pointer;
+  }
+  nav button.active{ background:#fff; transform:translateY(1px)}
+  main{padding:12px; max-width:1100px; margin:0 auto 64px}
+  .screen{display:none}
+  .screen.active{display:block}
+
+  /* Emerald-esque panels */
+  .panel{
+    background:var(--panel);
+    border:3px solid var(--emerald-dark);
+    border-radius:10px;
+    padding:12px;
+    box-shadow:var(--shadow);
+  }
+  .grid{display:grid; gap:var(--grid-gap)}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr)}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr)}
+  .grid@sm{display:grid}
+  @media (max-width:950px){ .grid.cols-3{grid-template-columns:repeat(2,1fr)} .grid.cols-4{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:640px){ .grid.cols-2,.grid.cols-3,.grid.cols-4{grid-template-columns:1fr}}
+
+  /* Summary: trainer + 3x2 team */
+  .trainer{
+    display:flex; gap:12px; align-items:center;
+  }
+  .trainer img{
+    width:72px; height:72px; object-fit:cover; border-radius:8px; border:3px solid var(--emerald-dark); background:#fff;
+  }
+  .upload-inline{display:inline-block}
+  .small{font-size:12px; opacity:.85}
+  .team-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+  }
+  .mon{
+    background:var(--ui); border:3px solid var(--emerald-dark); border-radius:10px; padding:8px;
+    display:grid; grid-template-columns:80px 1fr; gap:8px; align-items:center;
+  }
+  .mon img{
+    width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid var(--emerald-dark); background:#fff;
+  }
+  .label{font-weight:700}
+  .cat-pill{font-size:11px; padding:2px 6px; border-radius:999px; background:#e7fff1; border:1px solid var(--emerald-dark); display:inline-block; margin-left:6px}
+  .xpbar, .sexpbar{
+    height:10px; background:#d9eefc; border:2px solid var(--emerald-dark); border-radius:6px; overflow:hidden; position:relative;
+  }
+  .xpbar>span{display:block; height:100%; background:var(--xp); width:0%}
+  .sexpbar{background:#fff4c3}
+  .sexpbar>span{display:block; height:100%; background:var(--sexp); width:0%}
+
+  .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .grow{flex:1}
+  .right{margin-left:auto}
+  .btn,.btn-danger,.btn-ghost{
+    appearance:none; border:2px solid var(--emerald-dark); background:#fff; color:var(--ink); padding:6px 10px; border-radius:8px; font-weight:700; cursor:pointer;
+    box-shadow:0 2px 0 var(--emerald-dark);
+  }
+  .btn:hover{filter:brightness(0.98)}
+  .btn-danger{border-color:#721c24; background:#ffe2e2; color:#721c24}
+  .btn-ghost{background:#f1fff8}
+  .tag{font-size:12px; padding:2px 6px; border-radius:6px; background:#e8fff2; border:1px solid var(--emerald-dark)}
+  .lightbox{
+    position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:50;
+  }
+  .lightbox.active{display:flex}
+  .card{max-width:720px; width:92%; background:#fff; border:4px solid var(--emerald-dark); border-radius:10px; padding:14px; box-shadow:var(--shadow)}
+  .card h3{margin-top:0}
+  .list{display:grid; gap:8px}
+  .task{background:#fff; border:3px solid var(--emerald-dark); border-radius:8px; padding:10px}
+  .task .row{justify-content:space-between}
+  .muted{opacity:.7}
+  .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:12px; padding:2px 6px; border-radius:6px; background:#eef5ff; border:1px solid #aac7ff}
+  .sep{height:2px; background:#cfeee0; margin:8px 0}
+  .pill{background:#f1fff9;border:1px solid var(--emerald-dark); border-radius:999px;padding:4px 8px; font-size:12px}
+  .note{background:#f9fffd; border-left:4px solid var(--emerald-dark); padding:8px; border-radius:6px}
+  .center{text-align:center}
+  .roll{
+    animation: bob 1.3s ease-in-out infinite;
+  }
+  @keyframes bob{0%{transform:translateY(0)}50%{transform:translateY(-3px)}100%{transform:translateY(0)}}
+  .calendar{background:#fff; border:3px solid var(--emerald-dark); border-radius:10px; overflow:hidden}
+  .cal-head{display:flex; align-items:center; justify-content:space-between; background:var(--panel-dark); padding:8px 10px; border-bottom:3px solid var(--emerald-dark)}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr)}
+  .cal-grid .cell{border-right:1px solid #c9eddc; border-bottom:1px solid #c9eddc; min-height:90px; padding:6px; font-size:12px; position:relative}
+  .cal-grid .cell:nth-child(7n){border-right:none}
+  .cal-grid .cell .date{position:absolute; top:4px; right:6px; font-weight:700; opacity:.6}
+  .cal-grid .taskdot{width:6px; height:6px; border-radius:50%; display:inline-block; margin:1px}
+  .cal-legend{display:flex; gap:10px; flex-wrap:wrap; margin:8px 0}
+  .category-color-Fitness{background:#86e1ff}
+  .category-color-Home{background:#ffbf86}
+  .category-color-Work{background:#ffd5e1}
+  .category-color-Skills{background:#a4ffa6}
+  .category-color-Finance{background:#faff86}
+  .category-color-Other{background:#d6cfff}
+
+  .input, select, textarea{width:100%; padding:8px; border:2px solid var(--emerald-dark); border-radius:8px; background:#fff}
+  label{font-weight:700; font-size:13px}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  @media (max-width:640px){.two{grid-template-columns:1fr}}
+
+  /* tiny pixel border around main panels */
+  .pixel {
+    outline: 3px solid var(--pixel);
+    outline-offset: -3px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div style="font-size:22px">🟢</div>
+  <h1>Emerald Task Party</h1>
+  <span class="badge-pill">Offline-ready</span>
+  <span class="badge-pill right">GBA-style UI</span>
+</header>
+
+<nav id="tabs">
+  <button data-screen="summary" class="active">Summary</button>
+  <button data-screen="create">Create Task</button>
+  <button data-screen="tasks">All Tasks</button>
+  <button data-screen="team">Team</button>
+  <button data-screen="bank">Bank</button>
+  <button data-screen="gacha">Gacha</button>
+  <button data-screen="progress">Progress</button>
+  <button data-screen="calendar">Calendar</button>
+  <button data-screen="settings">Settings</button>
+</nav>
+
+<main>
+  <!-- SUMMARY -->
+  <section id="summary" class="screen active">
+    <div class="panel grid cols-2">
+      <div class="panel pixel">
+        <div class="trainer">
+          <img id="trainerSprite" alt="Trainer">
+          <div>
+            <div class="row">
+              <strong id="trainerName">Trainer</strong>
+              <button class="btn-ghost right" id="editTrainerBtn">Edit</button>
+            </div>
+            <div class="small">SEXP:
+              <div class="sexpbar" title="Special EXP">
+                <span id="sexpFill" style="width:0%"></span>
+              </div>
+              <div class="row small">
+                <span>Current: <span id="sexpCurrent">0</span> / <span id="sexpMax">100</span></span>
+                <button class="btn right" id="claimDailySexpBtn">Claim Daily SEXP</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="small">Variety Streak: <span id="varietyStreak">1</span> unique category(ies)</div>
+      </div>
+
+      <div class="panel pixel">
+        <div class="row">
+          <div class="pill">Gym Badges: <span id="badgeCount">0</span>/8</div>
+          <div class="pill">Whiteouts: <span id="whiteouts">0</span></div>
+        </div>
+        <div class="sep"></div>
+        <div class="grid cols-2">
+          <button class="btn" data-screen-jump="progress">Update Badges</button>
+          <button class="btn" data-screen-jump="gacha">Open Gacha</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel pixel" style="margin-top:12px">
+      <h3 style="margin:0 0 8px">Your Team</h3>
+      <div class="team-grid" id="teamGrid"></div>
+    </div>
+  </section>
+
+  <!-- CREATE TASK -->
+  <section id="create" class="screen">
+    <div class="panel pixel">
+      <h3>Create Task</h3>
+      <form id="taskForm" class="grid cols-2">
+        <div>
+          <label>Title</label>
+          <input class="input" name="title" required placeholder="e.g., Gym workout">
+        </div>
+        <div>
+          <label>Category</label>
+          <select name="category" class="input" required>
+            <option>Fitness</option><option>Home</option><option>Work</option>
+            <option>Skills</option><option>Finance</option><option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label>Priority</label>
+          <select name="priority" class="input">
+            <option>Low</option><option selected>Medium</option><option>High</option>
+          </select>
+        </div>
+        <div>
+          <label>Date (optional)</label>
+          <input type="date" class="input" name="date">
+        </div>
+        <div class="two" style="grid-column:1/-1">
+          <div>
+            <label>Recurring</label>
+            <select name="recurring" class="input" id="recurringType">
+              <option value="none" selected>None</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+          <div>
+            <label>Interval</label>
+            <input type="number" class="input" name="interval" min="1" value="1">
+          </div>
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Notes</label>
+          <textarea class="input" name="note" rows="3" placeholder="Optional details..."></textarea>
+        </div>
+        <div style="grid-column:1/-1" class="row">
+          <button class="btn" type="submit">Add Task</button>
+          <span class="small">Tip: Press <span class="kbd">Ctrl/⌘ + Enter</span> to save</span>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- TASKS -->
+  <section id="tasks" class="screen">
+    <div class="panel pixel">
+      <div class="row">
+        <div class="row" role="tablist" aria-label="Task filter">
+          <button class="btn-ghost taskTab active" data-filter="All">All</button>
+          <button class="btn-ghost taskTab" data-filter="Fitness">Fitness</button>
+          <button class="btn-ghost taskTab" data-filter="Home">Home</button>
+          <button class="btn-ghost taskTab" data-filter="Work">Work</button>
+          <button class="btn-ghost taskTab" data-filter="Skills">Skills</button>
+          <button class="btn-ghost taskTab" data-filter="Finance">Finance</button>
+          <button class="btn-ghost taskTab" data-filter="Other">Other</button>
+        </div>
+        <div class="right">
+          <label class="small"><input type="checkbox" id="hideRecurring"> Hide recurring</label>
+        </div>
+      </div>
+      <div class="sep"></div>
+      <div id="taskList" class="list"></div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section id="team" class="screen">
+    <div class="panel pixel">
+      <h3>Team (Category-bound slots)</h3>
+      <p class="small muted">Each slot represents a category. Use <b>BANK</b> to move a Pokémon out of a slot, or move one in from the Bank.</p>
+      <div id="teamEdit" class="grid cols-2"></div>
+    </div>
+  </section>
+
+  <!-- BANK -->
+  <section id="bank" class="screen">
+    <div class="panel pixel">
+      <div class="row">
+        <h3 style="margin:0">Bank</h3>
+        <button class="btn right" id="addBankPokemonBtn">Add Pokémon</button>
+      </div>
+      <div id="bankList" class="grid cols-3" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <!-- GACHA -->
+  <section id="gacha" class="screen">
+    <div class="panel pixel">
+      <h3>Gacha</h3>
+      <div class="row">
+        <div class="grow">
+          <div class="sexpbar"><span id="sexpFill2"></span></div>
+          <div class="small">SEXP: <span id="sexpCurrent2">0</span> / <span id="sexpMax2">100</span></div>
+        </div>
+        <button class="btn roll" id="rollBtn">ROLL!</button>
+      </div>
+      <p class="note small">When you have enough SEXP, pressing <b>ROLL!</b> spends it and grants you permission to use your wild encounter randomizer. After catching, add the mon to <b>Bank</b> and swap it into a Team slot (it will copy the replaced mon’s level).</p>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section id="progress" class="screen">
+    <div class="panel pixel">
+      <h3>Progress</h3>
+      <div class="row">
+        <div><b>Whiteouts</b>: <span id="whiteoutsVal">0</span></div>
+        <button class="btn right" id="incWhiteout">+1 Whiteout</button>
+      </div>
+      <div class="sep"></div>
+      <div class="grid cols-4" id="badges"></div>
+    </div>
+  </section>
+
+  <!-- CALENDAR -->
+  <section id="calendar" class="screen">
+    <div class="panel pixel">
+      <div class="row">
+        <h3 style="margin:0">Calendar</h3>
+        <label class="small right"><input type="checkbox" id="calHideRecurring"> Hide recurring</label>
+      </div>
+      <div class="calendar">
+        <div class="cal-head">
+          <button class="btn-ghost" id="prevMonth">&lt; Prev</button>
+          <div><b id="calTitle"></b></div>
+          <button class="btn-ghost" id="nextMonth">Next &gt;</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div class="cal-legend small">
+        <span><span class="taskdot category-color-Fitness"></span>Fitness</span>
+        <span><span class="taskdot category-color-Home"></span>Home</span>
+        <span><span class="taskdot category-color-Work"></span>Work</span>
+        <span><span class="taskdot category-color-Skills"></span>Skills</span>
+        <span><span class="taskdot category-color-Finance"></span>Finance</span>
+        <span><span class="taskdot category-color-Other"></span>Other</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="settings" class="screen">
+    <div class="panel pixel">
+      <h3>Settings</h3>
+      <div class="grid cols-2">
+        <div class="panel">
+          <h4 style="margin-top:0">Trainer</h4>
+          <label>Name</label>
+          <input id="setTrainerName" class="input" placeholder="Trainer name">
+          <div class="sep"></div>
+          <label>Trainer Sprite</label>
+          <input type="file" id="setTrainerSprite" class="input" accept="image/*">
+        </div>
+
+        <div class="panel">
+          <h4 style="margin-top:0">Task → Level progress</h4>
+          <div class="two">
+            <div>
+              <label>Units per level</label>
+              <input type="number" id="unitsPerLevel" class="input" min="1" value="6">
+              <div class="small muted">How many “units” fill 1 level (i.e., one Rare Candy ready).</div>
+            </div>
+            <div>
+              <label>Low/Med/High task units</label>
+              <input id="unitsLMH" class="input" value="1,2,3">
+              <div class="small muted">Comma-separated (e.g., 1,2,3)</div>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <h4 style="margin:8px 0 6px">SEXP</h4>
+          <div class="two">
+            <div>
+              <label>Threshold to ROLL</label>
+              <input type="number" id="sexpThreshold" class="input" min="10" value="100">
+            </div>
+            <div>
+              <label>Daily SEXP</label>
+              <input type="number" id="sexpDaily" class="input" min="0" value="10">
+            </div>
+          </div>
+          <div class="two">
+            <div>
+              <label>Variety base (2 cats)</label>
+              <input type="number" id="sexpVarBase" class="input" min="0" value="30">
+            </div>
+            <div>
+              <label>Variety step (+ each new)</label>
+              <input type="number" id="sexpVarStep" class="input" min="0" value="20">
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="grid-column:1/-1">
+          <h4 style="margin-top:0">Data</h4>
+          <button class="btn" id="exportBtn">Export Backup</button>
+          <input type="file" id="importFile" class="input" accept="application/json">
+          <button class="btn-danger" id="resetBtn">Factory Reset</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Lightboxes -->
+<div class="lightbox" id="taskLightbox">
+  <div class="card">
+    <h3 id="lbTitle">Task</h3>
+    <div id="lbBody"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="lbComplete">Complete</button>
+      <button class="btn-danger" id="lbDelete">Delete</button>
+      <button class="btn-ghost right" id="lbClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="pokemonLightbox">
+  <div class="card">
+    <h3 id="plbTitle">Pokémon</h3>
+    <div id="plbBody"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="plbSave">Save</button>
+      <button class="btn-ghost right" id="plbClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ======= Storage & State ======= */
+const defaultState = () => ({
+  trainer:{ name:"Trainer", sprite:null },
+  settings:{
+    unitsPerLevel:6, unitsLMH:[1,2,3],
+    sexpThreshold:100, sexpDaily:10,
+    sexpVarBase:30, sexpVarStep:20
+  },
+  sexp:0, lastDailySexp:null,
+  variety:{ set:[], streak:1, lastCat:null },
+  team:{ // category-locked slots
+    Fitness:null, Home:null, Work:null, Skills:null, Finance:null, Other:null
+  },
+  bank:[],
+  tasks:[], // {id,title,category,priority,date?,note,recurring:{type,interval}, completed:false, completions?:{[isoDate]:true}}
+  badges:[false,false,false,false,false,false,false,false],
+  whiteouts:0,
+  calendar:{ month:(new Date()).getMonth(), year:(new Date()).getFullYear() }
+});
+let STATE = load();
+function load(){
+  const raw = localStorage.getItem('emeraldTaskParty');
+  if(!raw){ return defaultState(); }
+  try{
+    const obj = JSON.parse(raw);
+    // migrate defaults
+    const d = defaultState();
+    return deepMerge(d, obj);
+  }catch(e){ console.error(e); return defaultState(); }
+}
+function save(){ localStorage.setItem('emeraldTaskParty', JSON.stringify(STATE)); }
+
+/* ======= Utils ======= */
+const $ = (q,p=document)=>p.querySelector(q);
+const $$ = (q,p=document)=>Array.from(p.querySelectorAll(q));
+const fmtDate = d => new Date(d).toISOString().slice(0,10);
+const todayISO = ()=> fmtDate(new Date());
+function uuid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+function deepMerge(a,b){
+  if(Array.isArray(a)){ return Array.isArray(b)? b : a; }
+  if(typeof a==='object' && a){
+    const out = {...a};
+    for(const k in b){ out[k] = (k in a)? deepMerge(a[k], b[k]) : b[k]; }
+    return out;
+  }
+  return (b===undefined)? a : b;
+}
+
+/* ======= Experience Model (level-fractions) =======
+   - Units per level (UPL) controls how many “task units” make one level.
+   - Each task gives 1/UPL * (units by priority).
+   - Keeps levels per workload stable regardless of current level or growth curve.
+   - Growth curves are available for info & flavor (Fast/MedFast/MedSlow/Slow). */
+const Growth = {
+  FAST: l => Math.floor( 4 * Math.pow(l,3) / 5 ),
+  MED_FAST: l => Math.pow(l,3),
+  MED_SLOW: l => Math.floor( (6/5)*Math.pow(l,3) - 15*Math.pow(l,2) + 100*l - 140 ),
+  SLOW: l => Math.floor( 5 * Math.pow(l,3) / 4 ),
+};
+const GrowthNames = ["Fast","Medium Fast","Medium Slow","Slow"];
+function levelInfo(mon){
+  const L = mon.level ?? 1;
+  const grow = (mon.growth||"Medium Fast");
+  const f = (grow==="Fast")? Growth.FAST
+         : (grow==="Medium Slow")? Growth.MED_SLOW
+         : (grow==="Slow")? Growth.SLOW
+         : Growth.MED_FAST;
+  const total = (L>=1)? f(L):0;
+  const next = (L<100)? f(L+1):f(100);
+  const need = Math.max(0,next-total);
+  return { total, next, need };
+}
+/* Fraction helpers */
+function unitsPerLevel(){ return Math.max(1, Number(STATE.settings.unitsPerLevel)||6); }
+function unitsForPriority(priority){
+  const arr=STATE.settings.unitsLMH||[1,2,3];
+  const safe=[Number(arr[0])||1, Number(arr[1])||2, Number(arr[2])||3];
+  return (priority==="Low")? safe[0] : (priority==="High")? safe[2] : safe[1];
+}
+
+/* ======= Rendering ======= */
+const SCREENS = $$('#tabs button').map(b=>b.dataset.screen);
+$('#tabs').addEventListener('click', e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  const scr = e.target.dataset.screen;
+  $$('#tabs button').forEach(x=>x.classList.toggle('active', x===e.target));
+  SCREENS.forEach(id=> $('#'+id).classList.toggle('active', id===scr));
+  window.scrollTo(0,0);
+  render();
+});
+$$('[data-screen-jump]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const scr = btn.getAttribute('data-screen-jump');
+    $(`#tabs button[data-screen="${scr}"]`).click();
+  });
+});
+
+function render(){
+  renderSummary();
+  renderTeamGrid();
+  renderTasks();
+  renderTeamEdit();
+  renderBank();
+  renderGacha();
+  renderProgress();
+  renderCalendar();
+  renderSettings();
+}
+function renderSummary(){
+  $('#trainerName').textContent = STATE.trainer.name || "Trainer";
+  if(STATE.trainer.sprite){ $('#trainerSprite').src = STATE.trainer.sprite; }
+  else $('#trainerSprite').src = 'data:image/svg+xml;utf8,'+encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect width="100%" height="100%" fill="#ffffff"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#1c9e57" font-size="10" font-family="monospace">Trainer</text></svg>`
+  );
+
+  const t = STATE.sexp, max = STATE.settings.sexpThreshold;
+  $('#sexpCurrent').textContent = t; $('#sexpMax').textContent = max;
+  $('#sexpCurrent2').textContent = t; $('#sexpMax2').textContent = max;
+  $('#sexpFill').style.width = Math.min(100, t/max*100) + '%';
+  $('#sexpFill2').style.width = Math.min(100, t/max*100) + '%';
+  $('#varietyStreak').textContent = STATE.variety.streak || 1;
+
+  const bcount = STATE.badges.filter(Boolean).length;
+  $('#badgeCount').textContent = bcount;
+  $('#whiteouts').textContent = STATE.whiteouts;
+}
+function renderTeamGrid(){
+  const grid = $('#teamGrid');
+  grid.innerHTML = '';
+  const cats = Object.keys(STATE.team);
+  cats.forEach(cat=>{
+    const mon = STATE.team[cat];
+    const div = document.createElement('div');
+    div.className='mon';
+    if(mon){
+      div.innerHTML = `
+        <img src="${mon.image||placeholderMon(cat)}" alt="${mon.nickname||mon.species}">
+        <div>
+          <div class="row">
+            <div class="label">${mon.nickname||mon.species} <span class="cat-pill">${cat}</span></div>
+            <div class="right">Lv. ${mon.level||1}</div>
+          </div>
+          <div class="xpbar"><span style="width:${Math.min(100,(mon.progress||0)*100)}%"></span></div>
+          <div class="small muted">Growth: ${mon.growth||'Medium Fast'}</div>
+        </div>`;
+    }else{
+      div.innerHTML = `
+        <img src="${placeholderMon(cat)}" alt="Empty slot">
+        <div>
+          <div class="label">Empty <span class="cat-pill">${cat}</span></div>
+          <div class="small muted">Move a Pokémon here from Bank.</div>
+        </div>`;
+    }
+    grid.appendChild(div);
+  });
+}
+function placeholderMon(cat){
+  const col = {
+    Fitness:'#86e1ff', Home:'#ffbf86', Work:'#ffd5e1',
+    Skills:'#a4ffa6', Finance:'#faff86', Other:'#d6cfff'
+  }[cat]||'#e6f7ee';
+  return 'data:image/svg+xml;utf8,'+encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="100%" height="100%" fill="${col}"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#0a4e2b" font-family="monospace" font-size="10">${cat}</text></svg>`
+  );
+}
+
+function renderTasks(filter='current'){
+  const activeTab = $('.taskTab.active')?.dataset.filter || 'All';
+  const hideRec = $('#hideRecurring').checked;
+  const list = $('#taskList');
+  list.innerHTML='';
+  const tasks = STATE.tasks.filter(t => (activeTab==='All'||t.category===activeTab) && (!hideRec || t.recurring?.type==='none'));
+  if(!tasks.length){ list.innerHTML = `<div class="small muted">No tasks here—add some! ✔️</div>`; return; }
+  tasks.sort((a,b)=>{
+    const da = a.date||'', db=b.date||'';
+    return (da===db)? a.title.localeCompare(b.title) : (da<db?-1:1);
+  });
+  for(const t of tasks){
+    const card = document.createElement('div');
+    card.className='task';
+    const due = t.date? ` · due ${t.date}`:'';
+    const rec = (t.recurring?.type!=='none')? ` · ${t.recurring.type} x${t.recurring.interval||1}`:'';
+    card.innerHTML = `
+      <div class="row">
+        <div><b>${t.title}</b> <span class="pill">${t.category}</span> <span class="pill">Pri: ${t.priority}</span> <span class="muted small">${due}${rec}</span></div>
+        <div>
+          <button class="btn" data-act="complete" data-id="${t.id}">Complete</button>
+          <button class="btn-danger" data-act="delete" data-id="${t.id}">Delete</button>
+          <button class="btn-ghost" data-act="view" data-id="${t.id}">Info</button>
+        </div>
+      </div>
+      ${t.note? `<div class="note small">${t.note}</div>`:''}
+    `;
+    list.appendChild(card);
+  }
+}
+
+function renderTeamEdit(){
+  const wrap = $('#teamEdit');
+  wrap.innerHTML='';
+  for(const cat of Object.keys(STATE.team)){
+    const mon = STATE.team[cat];
+    const card = document.createElement('div');
+    card.className='panel';
+    if(mon){
+      const { total, next, need } = levelInfo(mon);
+      card.innerHTML = `
+        <div class="row">
+          <div class="label">${mon.nickname||mon.species} <span class="cat-pill">${cat}</span></div>
+          <div class="right">Lv. ${mon.level}</div>
+        </div>
+        <div class="row" style="margin:8px 0">
+          <img src="${mon.image||placeholderMon(cat)}" style="width:80px;height:80px;border-radius:8px;border:2px solid var(--emerald-dark);background:#fff">
+          <div class="grow">
+            <div class="small">Progress to next level</div>
+            <div class="xpbar"><span style="width:${(mon.progress||0)*100}%"></span></div>
+            <div class="small muted">Gen3 curve: ${mon.growth||'Medium Fast'} · Need ~${need.toLocaleString()} XP (flavor)</div>
+            <div class="two" style="margin-top:6px">
+              <div><label>Nickname</label><input class="input" data-edit="nick" data-cat="${cat}" value="${mon.nickname||''}"></div>
+              <div><label>Species</label><input class="input" data-edit="species" data-cat="${cat}" value="${mon.species||''}"></div>
+            </div>
+            <div class="two" style="margin-top:6px">
+              <div><label>Level</label><input type="number" min="1" max="100" class="input" data-edit="level" data-cat="${cat}" value="${mon.level||1}"></div>
+              <div>
+                <label>Growth</label>
+                <select class="input" data-edit="growth" data-cat="${cat}">
+                  ${GrowthNames.map(n=>`<option ${mon.growth===n? 'selected':''}>${n}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:6px">
+              <label>Portrait</label>
+              <input type="file" accept="image/*" data-edit="image" data-cat="${cat}">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn" data-act="bankMon" data-cat="${cat}">BANK</button>
+          <button class="btn-ghost right" data-act="saveMon" data-cat="${cat}">Save</button>
+        </div>
+      `;
+    }else{
+      card.innerHTML = `
+        <div class="label">Empty <span class="cat-pill">${cat}</span></div>
+        <div class="small muted" style="margin:6px 0">Move a Pokémon here from Bank.</div>
+      `;
+    }
+    wrap.appendChild(card);
+  }
+}
+
+function renderBank(){
+  const list = $('#bankList'); list.innerHTML='';
+  if(!STATE.bank.length){ list.innerHTML = `<div class="small muted">Bank is empty.</div>`; return; }
+  for(const m of STATE.bank){
+    const el = document.createElement('div');
+    el.className='panel';
+    el.innerHTML = `
+      <div class="row">
+        <div class="label">${m.nickname||m.species}</div>
+        <div class="right">Lv. ${m.level||1}</div>
+      </div>
+      <img src="${m.image||placeholderMon('Other')}" style="width:100%;height:160px;object-fit:cover;border:2px solid var(--emerald-dark);border-radius:8px;background:#fff">
+      <div class="two" style="margin-top:6px">
+        <div>
+          <label>To Team slot (category)</label>
+          <select class="input" data-bank-move="${m.id}">
+            ${Object.keys(STATE.team).map(c=>`<option>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn" data-act="moveToTeam" data-id="${m.id}">Move To Team</button>
+        </div>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <button class="btn-ghost" data-act="editBank" data-id="${m.id}">Edit</button>
+        <button class="btn-danger right" data-act="deleteBank" data-id="${m.id}">Release</button>
+      </div>
+    `;
+    list.appendChild(el);
+  }
+}
+
+function renderGacha(){
+  // summary bars already updated in renderSummary
+  // nothing extra here
+}
+
+function renderProgress(){
+  $('#whiteoutsVal').textContent = STATE.whiteouts;
+  const badgeWrap = $('#badges'); badgeWrap.innerHTML='';
+  for(let i=0;i<8;i++){
+    const on = !!STATE.badges[i];
+    const b = document.createElement('button');
+    b.className='btn';
+    b.dataset.badge=i;
+    b.textContent = on? `Badge ${i+1} ✓` : `Badge ${i+1} ×`;
+    if(on) b.style.background='#e8fff2';
+    badgeWrap.appendChild(b);
+  }
+}
+
+function firstOfMonth(y,m){ return new Date(y,m,1); }
+function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
+function renderCalendar(){
+  const {year, month} = STATE.calendar;
+  $('#calTitle').textContent = new Date(year, month, 1).toLocaleString(undefined,{month:'long', year:'numeric'});
+  const grid = $('#calGrid'); grid.innerHTML='';
+  const start = firstOfMonth(year, month);
+  const dow = (start.getDay()+6)%7; // make Monday first (0..6)
+  const dim = daysInMonth(year, month);
+  const hideRec = $('#calHideRecurring').checked;
+  for(let i=0;i<dow;i++){
+    const cell = document.createElement('div');
+    cell.className='cell'; grid.appendChild(cell);
+  }
+  for(let day=1;day<=dim;day++){
+    const d = new Date(year, month, day); const iso = fmtDate(d);
+    const cell = document.createElement('div'); cell.className='cell';
+    cell.innerHTML = `<div class="date">${day}</div><div class="dots"></div>`;
+    const dots = cell.querySelector('.dots');
+    const tasks = occurrencesOnDate(iso).filter(t=> !hideRec || t.recurring?.type==='none');
+    for(const t of tasks){
+      const dot = document.createElement('span');
+      dot.className = 'taskdot category-color-'+t.category;
+      dot.title = `${t.title} [${t.category}]`;
+      dots.appendChild(dot);
+    }
+    cell.addEventListener('click', ()=>{
+      // lightbox for the day
+      const list = tasks.map(t=>`<li>${t.title} <span class="pill">${t.category}</span> <button class="btn" data-quick-complete="${t.id}" data-date="${iso}">Complete</button></li>`).join('');
+      showTaskLightbox({
+        title: `Tasks on ${iso}`,
+        html: list? `<ul>${list}</ul>`:'<div class="small muted">No tasks.</div>',
+        allowComplete:false, taskId:null
+      });
+      // wire quick complete
+      $('#taskLightbox').querySelectorAll('[data-quick-complete]').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          completeTask(btn.getAttribute('data-quick-complete'), iso);
+        });
+      });
+    });
+    grid.appendChild(cell);
+  }
+}
+
+/* ======= Task creation & interactions ======= */
+$('#taskForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const t = {
+    id: uuid(),
+    title: (fd.get('title')||'').toString().trim(),
+    category: fd.get('category'),
+    priority: fd.get('priority'),
+    date: fd.get('date')||null,
+    note: (fd.get('note')||'').toString(),
+    recurring:{
+      type: fd.get('recurring')||'none',
+      interval: Math.max(1, Number(fd.get('interval')||1))
+    },
+    completed:false
+  };
+  STATE.tasks.push(t); save(); e.target.reset(); renderTasks(); alert('Task added ✔️');
+});
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey||e.metaKey) && e.key==='Enter'){
+    const f = $('#taskForm'); if(f && $('#create').classList.contains('active')) f.requestSubmit();
+  }
+});
+
+$('#taskList').addEventListener('click', e=>{
+  const act = e.target.getAttribute('data-act'); if(!act) return;
+  const id = e.target.getAttribute('data-id');
+  if(act==='delete'){ deleteTask(id); }
+  else if(act==='complete'){ completeTask(id); }
+  else if(act==='view'){ openTask(id); }
+});
+
+function openTask(id){
+  const t = STATE.tasks.find(x=>x.id===id); if(!t) return;
+  showTaskLightbox({
+    title:t.title,
+    html: `
+      <div class="row"><span class="pill">${t.category}</span><span class="pill">Priority: ${t.priority}</span>${t.date? `<span class="pill">Due ${t.date}</span>`:''}</div>
+      ${t.note? `<div class="note" style="margin-top:8px">${t.note}</div>`:''}
+      <div class="small muted" style="margin-top:8px">Recurring: ${t.recurring?.type||'none'} x${t.recurring?.interval||1}</div>
+    `,
+    allowComplete:true, taskId: id
+  });
+}
+function deleteTask(id){
+  const i = STATE.tasks.findIndex(x=>x.id===id); if(i<0) return;
+  if(!confirm('Delete this task?')) return;
+  STATE.tasks.splice(i,1); save(); renderTasks(); renderCalendar();
+}
+function completeTask(id, dateOverride=null){
+  const t = STATE.tasks.find(x=>x.id===id); if(!t) return;
+  const whenISO = dateOverride || (t.date||todayISO());
+  // Mark completion (for recurring, track occurrences)
+  if(t.recurring?.type!=='none'){
+    t.completions = t.completions||{};
+    t.completions[whenISO]=true;
+  }else{
+    t.completed=true;
+  }
+  // Award level progress
+  awardProgress(t.category, t.priority);
+  // SEXP via variety
+  awardSEXP(t.category);
+  save(); render(); alert('Task completed! Rare Candy progress gained ✨');
+}
+
+function occurrencesOnDate(iso){
+  // Generate all tasks that occur on date `iso`
+  const d = STATE.tasks.filter(t=>{
+    if(t.recurring?.type==='none'){
+      return (t.date? t.date===iso : false);
+    }
+    // recurring
+    const start = t.date? new Date(t.date) : null;
+    const target = new Date(iso);
+    const interval = Math.max(1, t.recurring.interval||1);
+    if(t.recurring.type==='daily'){
+      if(!start) return true; // floating daily
+      const diff = Math.floor((target-start)/86400000);
+      return diff>=0 && diff%interval===0;
+    }
+    if(t.recurring.type==='weekly'){
+      if(!start) return true;
+      const diff = Math.floor((target-start)/86400000);
+      return diff>=0 && Math.floor(diff/7)%interval===0 && start.getDay()===target.getDay();
+    }
+    if(t.recurring.type==='monthly'){
+      if(!start) return true;
+      const sMonth = start.getMonth(), sDate = start.getDate();
+      // occurs each N months on the same date number (best effort)
+      const monthsBetween = (target.getFullYear()-start.getFullYear())*12 + (target.getMonth()-sMonth);
+      return monthsBetween>=0 && monthsBetween%interval===0 && target.getDate()===sDate;
+    }
+    return false;
+  });
+  // Filter out recurring tasks already completed that day
+  return d.filter(t=> !(t.recurring?.type!=='none' && t.completions?.[iso]));
+}
+
+/* ======= Level progress & SEXP awarding ======= */
+function awardProgress(category, priority){
+  const units = unitsForPriority(priority);
+  const add = units / unitsPerLevel();
+  const mon = STATE.team[category];
+  if(!mon){
+    alert(`No Pokémon assigned to ${category}. Add one in Team/Bank first.`);
+    return;
+  }
+  mon.progress = (mon.progress||0) + add;
+  while(mon.progress >= 1 && (mon.level||1) < 100){
+    mon.progress -= 1;
+    mon.level = (mon.level||1)+1;
+    // Flavor: you earned a Rare Candy’s worth of progress
+    // (Feed a Rare Candy in-game to keep parity.)
+  }
+}
+
+function awardSEXP(category){
+  const v = STATE.variety;
+  // unique-category streak (no repeats inside streak)
+  if(v.set.includes(category) || v.lastCat===category){
+    v.set = [category];
+    v.streak = 1;
+  }else{
+    v.set.push(category);
+    v.streak = v.set.length;
+  }
+  v.lastCat = category;
+
+  const base = Number(STATE.settings.sexpVarBase)||30;
+  const step = Number(STATE.settings.sexpVarStep)||20;
+  let gain = 0;
+  if(v.streak>=2) gain = base + (v.streak-2)*step;
+  STATE.sexp = Math.max(0, Math.floor(STATE.sexp + gain));
+}
+
+/* ======= Lightboxes ======= */
+function showTaskLightbox({title, html, allowComplete, taskId}){
+  $('#lbTitle').textContent = title;
+  $('#lbBody').innerHTML = html;
+  $('#lbComplete').style.display = allowComplete? '' : 'none';
+  $('#lbComplete').onclick = ()=>{ completeTask(taskId); closeTaskLb(); };
+  $('#lbDelete').onclick = ()=>{ deleteTask(taskId); closeTaskLb(); };
+  $('#lbClose').onclick = closeTaskLb;
+  $('#taskLightbox').classList.add('active');
+}
+function closeTaskLb(){ $('#taskLightbox').classList.remove('active'); }
+
+function showPokemonEditor(mon, onSave){
+  $('#plbTitle').textContent = mon.id? 'Edit Pokémon' : 'Add Pokémon';
+  $('#plbBody').innerHTML = `
+    <div class="two">
+      <div><label>Species</label><input class="input" id="pmSpecies" value="${mon.species||''}"></div>
+      <div><label>Nickname</label><input class="input" id="pmNick" value="${mon.nickname||''}"></div>
+    </div>
+    <div class="two" style="margin-top:6px">
+      <div><label>Level</label><input type="number" min="1" max="100" class="input" id="pmLevel" value="${mon.level||1}"></div>
+      <div>
+        <label>Growth Rate</label>
+        <select class="input" id="pmGrowth">
+          ${GrowthNames.map(n=>`<option ${mon.growth===n? 'selected':''}>${n}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:6px">
+      <label>Portrait</label>
+      <input type="file" accept="image/*" id="pmImg">
+    </div>
+  `;
+  $('#plbSave').onclick = async ()=>{
+    const upd = {
+      ...mon,
+      species: $('#pmSpecies').value.trim()||'Unknown',
+      nickname: $('#pmNick').value.trim(),
+      level: Math.max(1, Math.min(100, Number($('#pmLevel').value||1))),
+      growth: $('#pmGrowth').value,
+    };
+    const file = $('#pmImg').files?.[0];
+    if(file){ upd.image = await fileToDataURL(file); }
+    onSave(upd); $('#pokemonLightbox').classList.remove('active'); save(); render();
+  };
+  $('#plbClose').onclick = ()=> $('#pokemonLightbox').classList.remove('active');
+  $('#pokemonLightbox').classList.add('active');
+}
+
+/* ======= Team/Bank actions ======= */
+$('#teamEdit').addEventListener('click', async e=>{
+  const act = e.target.getAttribute('data-act');
+  if(!act) return;
+  const cat = e.target.getAttribute('data-cat');
+  const mon = STATE.team[cat];
+  if(act==='bankMon'){
+    if(!mon) return;
+    if(!confirm('Move this Pokémon to Bank (slot will be empty)?')) return;
+    STATE.bank.push(mon); STATE.team[cat]=null; save(); render();
+  }else if(act==='saveMon'){
+    if(!mon) return;
+    // read inline edits
+    const nick = $(`input[data-edit="nick"][data-cat="${cat}"]`).value.trim();
+    const species = $(`input[data-edit="species"][data-cat="${cat}"]`).value.trim()||'Unknown';
+    const level = Math.max(1, Math.min(100, Number($(`input[data-edit="level"][data-cat="${cat}"]`).value||1)));
+    const growth = $(`select[data-edit="growth"][data-cat="${cat}"]`).value;
+    const file = $(`input[data-edit="image"][data-cat="${cat}"]`).files?.[0];
+    mon.nickname=nick; mon.species=species; mon.level=level; mon.growth=growth;
+    if(file){ mon.image = await fileToDataURL(file); }
+    save(); render();
+  }
+});
+
+$('#addBankPokemonBtn').addEventListener('click', ()=>{
+  showPokemonEditor({ level:1, growth:'Medium Fast', progress:0 }, mon=>{
+    mon.id = uuid();
+    mon.progress = mon.progress||0;
+    STATE.bank.push(mon);
+  });
+});
+
+$('#bankList').addEventListener('click', e=>{
+  const act = e.target.getAttribute('data-act'); if(!act) return;
+  const id = e.target.getAttribute('data-id');
+  if(act==='deleteBank'){
+    if(!confirm('Release this Pokémon from Bank?')) return;
+    STATE.bank = STATE.bank.filter(m=>m.id!==id); save(); renderBank();
+  }
+  if(act==='editBank'){
+    const mon = STATE.bank.find(m=>m.id===id); if(!mon) return;
+    showPokemonEditor(mon, upd=>{
+      Object.assign(mon, upd);
+    });
+  }
+  if(act==='moveToTeam'){
+    const sel = $(`[data-bank-move="${id}"]`);
+    const cat = sel?.value;
+    if(!cat) return;
+    const mon = STATE.bank.find(m=>m.id===id); if(!mon) return;
+    // If slot occupied, adopt the level
+    if(STATE.team[cat]){
+      const replaced = STATE.team[cat];
+      mon.level = replaced.level; // carry over level
+      // Move replaced to Bank
+      replaced.id = replaced.id || uuid();
+      STATE.bank.push(replaced);
+    }
+    // Place and remove from bank
+    STATE.team[cat] = mon;
+    STATE.bank = STATE.bank.filter(m=>m.id!==id);
+    save(); render();
+  }
+});
+
+/* ======= Trainer edits & daily SEXP ======= */
+$('#editTrainerBtn').addEventListener('click', ()=>{
+  // jump to settings trainer panel
+  $(`#tabs button[data-screen="settings"]`).click();
+  $('#setTrainerName').focus();
+});
+$('#setTrainerName').addEventListener('input', e=>{
+  STATE.trainer.name = e.target.value; save(); renderSummary();
+});
+$('#setTrainerSprite').addEventListener('change', async e=>{
+  const f = e.target.files?.[0]; if(!f) return;
+  STATE.trainer.sprite = await fileToDataURL(f); save(); renderSummary();
+});
+$('#claimDailySexpBtn').addEventListener('click', ()=>{
+  const today = todayISO();
+  if(STATE.lastDailySexp === today){ alert('Already claimed today.'); return; }
+  STATE.lastDailySexp = today;
+  const add = Number(STATE.settings.sexpDaily)||0;
+  STATE.sexp = Math.floor(STATE.sexp + add);
+  save(); renderSummary();
+});
+
+/* ======= Gacha ======= */
+$('#rollBtn').addEventListener('click', ()=>{
+  const thresh = Number(STATE.settings.sexpThreshold)||100;
+  if(STATE.sexp < thresh){ alert('Not enough SEXP yet!'); return; }
+  if(!confirm(`Spend ${thresh} SEXP to gain a roll permission?`)) return;
+  STATE.sexp -= thresh;
+  save(); renderSummary();
+  alert('Permission granted! Use your randomizer in-game, then add the new Pokémon to Bank from the Bank screen.');
+});
+
+/* ======= Progress ======= */
+$('#incWhiteout').addEventListener('click', ()=>{ STATE.whiteouts++; save(); renderProgress(); });
+$('#badges').addEventListener('click', e=>{
+  const i = e.target.getAttribute('data-badge'); if(i===null) return;
+  const idx = Number(i);
+  STATE.badges[idx] = !STATE.badges[idx];
+  save(); renderProgress(); renderSummary();
+});
+
+/* ======= Calendar controls ======= */
+$('#prevMonth').addEventListener('click', ()=>{
+  let {year,month} = STATE.calendar;
+  month--; if(month<0){month=11; year--;}
+  STATE.calendar={year,month}; save(); renderCalendar();
+});
+$('#nextMonth').addEventListener('click', ()=>{
+  let {year,month} = STATE.calendar;
+  month++; if(month>11){month=0; year++;}
+  STATE.calendar={year,month}; save(); renderCalendar();
+});
+$('#calHideRecurring').addEventListener('change', renderCalendar);
+
+/* ======= Task tabs & toggles ======= */
+$$('.taskTab').forEach(b=> b.addEventListener('click', e=>{
+  $$('.taskTab').forEach(x=>x.classList.toggle('active', x===e.target));
+  renderTasks();
+}));
+$('#hideRecurring').addEventListener('change', renderTasks);
+
+/* ======= Settings save/export/import/reset ======= */
+function renderSettings(){
+  $('#setTrainerName').value = STATE.trainer.name || '';
+  $('#unitsPerLevel').value = STATE.settings.unitsPerLevel;
+  $('#unitsLMH').value = (STATE.settings.unitsLMH||[1,2,3]).join(',');
+  $('#sexpThreshold').value = STATE.settings.sexpThreshold;
+  $('#sexpDaily').value = STATE.settings.sexpDaily;
+  $('#sexpVarBase').value = STATE.settings.sexpVarBase;
+  $('#sexpVarStep').value = STATE.settings.sexpVarStep;
+}
+$('#unitsPerLevel').addEventListener('change', e=>{
+  STATE.settings.unitsPerLevel = Math.max(1, Number(e.target.value)||6); save();
+});
+$('#unitsLMH').addEventListener('change', e=>{
+  const parts = e.target.value.split(',').map(x=>Number(x.trim())).filter(x=>!isNaN(x));
+  if(parts.length>=3){ STATE.settings.unitsLMH = [parts[0],parts[1],parts[2]]; save(); }
+});
+$('#sexpThreshold').addEventListener('change', e=>{
+  STATE.settings.sexpThreshold = Math.max(10, Number(e.target.value)||100); save(); renderSummary();
+});
+$('#sexpDaily').addEventListener('change', e=>{
+  STATE.settings.sexpDaily = Math.max(0, Number(e.target.value)||0); save();
+});
+$('#sexpVarBase').addEventListener('change', e=>{
+  STATE.settings.sexpVarBase = Math.max(0, Number(e.target.value)||30); save();
+});
+$('#sexpVarStep').addEventListener('change', e=>{
+  STATE.settings.sexpVarStep = Math.max(0, Number(e.target.value)||20); save();
+});
+
+$('#exportBtn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(STATE)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='emerald-task-party.backup.json';
+  a.click(); URL.revokeObjectURL(url);
+});
+$('#importFile').addEventListener('change', async e=>{
+  const file = e.target.files?.[0]; if(!file) return;
+  const text = await file.text();
+  try{
+    const data = JSON.parse(text);
+    STATE = deepMerge(defaultState(), data); save(); render(); alert('Imported ✔️');
+  }catch(err){ alert('Invalid backup file.'); }
+});
+$('#resetBtn').addEventListener('click', ()=>{
+  if(!confirm('Factory reset all data?')) return;
+  STATE = defaultState(); save(); render();
+});
+
+/* ======= File helpers ======= */
+function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+
+/* ======= Boot ======= */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+render();
+</script>
+</body>
+</html>
