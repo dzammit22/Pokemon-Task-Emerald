@@ -4,7 +4,6 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Emerald Task Party</title>
-<link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1c9e57">
 <style>
   :root{
@@ -16,27 +15,26 @@
     --ink:#103622;
     --ink-soft:#2b5f44;
     --ui:#f7fff9;
-    --xp:#9bd5ff;          /* light blue exp bar */
-    --sexp:#ffd64a;        /* yellow SEXP bar */
+    --xp:#9bd5ff;
+    --sexp:#ffd64a;
     --danger:#c62828;
     --ok:#2e7d32;
     --accent:#00c2ff;
     --shadow:0 3px 0 #0e5c34, 0 6px 12px rgba(0,0,0,.18);
     --pixel:#0a4e2b;
     --grid-gap:10px;
-    --slot: 112px;
-    --corner: 6px;
   }
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:
-    linear-gradient(180deg,#eafff2 0%,#d7ffe9 60%,#c8f9df 100%);
-    color:var(--ink); font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Inter, Arial, sans-serif;
+  html,body{
+    height:100%; margin:0; overflow-x:hidden;
+    background:linear-gradient(180deg,#eafff2 0%,#d7ffe9 60%,#c8f9df 100%);
+    color:var(--ink); font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Inter,Arial,sans-serif;
   }
   header{
     position:sticky; top:0; z-index:4;
     background:linear-gradient(180deg,#1c9e57 0%,#157a45 100%);
-    color:#fff; padding:10px 12px; box-shadow:var(--shadow);
-    display:flex; align-items:center; gap:12px;
+    color:#fff; padding:calc(8px + env(safe-area-inset-top,0px)) 12px 10px;
+    display:flex; align-items:center; gap:12px; box-shadow:var(--shadow);
   }
   header h1{font-size:18px; margin:0; letter-spacing:.5px}
   .badge-pill{background:#fff1; padding:4px 8px; border-radius:999px; font-size:12px; border:1px solid #fff3}
@@ -50,84 +48,68 @@
     box-shadow:0 2px 0 var(--emerald-dark); cursor:pointer;
   }
   nav button.active{ background:#fff; transform:translateY(1px)}
-  main{padding:12px; max-width:1100px; margin:0 auto 64px}
-  .screen{display:none}
-  .screen.active{display:block}
+  main{padding:12px; max-width:1100px; margin:0 auto calc(64px + env(safe-area-inset-bottom,0px))}
+  .screen{display:none} .screen.active{display:block}
 
-  /* Emerald-esque panels */
-  .panel{
-    background:var(--panel);
-    border:3px solid var(--emerald-dark);
-    border-radius:10px;
-    padding:12px;
-    box-shadow:var(--shadow);
-  }
+  .panel{ background:var(--panel); border:3px solid var(--emerald-dark); border-radius:10px; padding:12px; box-shadow:var(--shadow) }
   .grid{display:grid; gap:var(--grid-gap)}
   .grid.cols-2{grid-template-columns:repeat(2,1fr)}
   .grid.cols-3{grid-template-columns:repeat(3,1fr)}
   .grid.cols-4{grid-template-columns:repeat(4,1fr)}
-  .grid@sm{display:grid}
-  @media (max-width:950px){ .grid.cols-3{grid-template-columns:repeat(2,1fr)} .grid.cols-4{grid-template-columns:repeat(2,1fr)}}
-  @media (max-width:640px){ .grid.cols-2,.grid.cols-3,.grid.cols-4{grid-template-columns:1fr}}
+  @media (max-width:950px){ .grid.cols-3,.grid.cols-4{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:720px){ .grid.cols-2{grid-template-columns:1fr} }
+  @media (max-width:640px){ .grid.cols-3,.grid.cols-4{grid-template-columns:1fr} }
 
-  /* Summary: trainer + 3x2 team */
-  .trainer{
-    display:flex; gap:12px; align-items:center;
-  }
-  .trainer img{
-    width:72px; height:72px; object-fit:cover; border-radius:8px; border:3px solid var(--emerald-dark); background:#fff;
-  }
-  .upload-inline{display:inline-block}
+  .trainer{display:flex; gap:12px; align-items:center}
+  .trainer img{width:72px; height:72px; object-fit:cover; border-radius:8px; border:3px solid var(--emerald-dark); background:#fff}
   .small{font-size:12px; opacity:.85}
-  .team-grid{
-    display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
-  }
+
+  /* Summary team grid: 3 → 2 → 1 */
+  .team-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px}
+  @media (max-width:900px){ .team-grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:520px){ .team-grid{grid-template-columns:1fr} }
+
   .mon{
     background:var(--ui); border:3px solid var(--emerald-dark); border-radius:10px; padding:8px;
-    display:grid; grid-template-columns:80px 1fr; gap:8px; align-items:center;
+    display:grid; grid-template-columns:80px 1fr; gap:8px; align-items:center; min-width:0;
   }
-  .mon img{
-    width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid var(--emerald-dark); background:#fff;
-  }
+  .mon img{ width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid var(--emerald-dark); background:#fff }
+  @media (max-width:520px){ .mon{grid-template-columns:64px 1fr} .mon img{width:64px; height:64px} }
   .label{font-weight:700}
   .cat-pill{font-size:11px; padding:2px 6px; border-radius:999px; background:#e7fff1; border:1px solid var(--emerald-dark); display:inline-block; margin-left:6px}
-  .xpbar, .sexpbar{
-    height:10px; background:#d9eefc; border:2px solid var(--emerald-dark); border-radius:6px; overflow:hidden; position:relative;
-  }
+
+  .xpbar,.sexpbar{height:10px; background:#d9eefc; border:2px solid var(--emerald-dark); border-radius:6px; overflow:hidden}
   .xpbar>span{display:block; height:100%; background:var(--xp); width:0%}
-  .sexpbar{background:#fff4c3}
-  .sexpbar>span{display:block; height:100%; background:var(--sexp); width:0%}
+  .sexpbar{background:#fff4c3} .sexpbar>span{display:block; height:100%; background:var(--sexp); width:0%}
 
   .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-  .grow{flex:1}
-  .right{margin-left:auto}
+  .grow{flex:1} .right{margin-left:auto}
   .btn,.btn-danger,.btn-ghost{
-    appearance:none; border:2px solid var(--emerald-dark); background:#fff; color:var(--ink); padding:6px 10px; border-radius:8px; font-weight:700; cursor:pointer;
-    box-shadow:0 2px 0 var(--emerald-dark);
+    appearance:none; border:2px solid var(--emerald-dark); background:#fff; color:var(--ink); padding:6px 10px; border-radius:8px; font-weight:700; cursor:pointer; box-shadow:0 2px 0 var(--emerald-dark);
   }
   .btn:hover{filter:brightness(0.98)}
   .btn-danger{border-color:#721c24; background:#ffe2e2; color:#721c24}
   .btn-ghost{background:#f1fff8}
-  .tag{font-size:12px; padding:2px 6px; border-radius:6px; background:#e8fff2; border:1px solid var(--emerald-dark)}
-  .lightbox{
-    position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:50;
-  }
-  .lightbox.active{display:flex}
-  .card{max-width:720px; width:92%; background:#fff; border:4px solid var(--emerald-dark); border-radius:10px; padding:14px; box-shadow:var(--shadow)}
-  .card h3{margin-top:0}
+  .btn[disabled]{opacity:.5; pointer-events:none}
+
   .list{display:grid; gap:8px}
   .task{background:#fff; border:3px solid var(--emerald-dark); border-radius:8px; padding:10px}
   .task .row{justify-content:space-between}
+  .task.done{opacity:.65}
+  .task.done .tTitle{text-decoration:line-through}
   .muted{opacity:.7}
-  .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:12px; padding:2px 6px; border-radius:6px; background:#eef5ff; border:1px solid #aac7ff}
-  .sep{height:2px; background:#cfeee0; margin:8px 0}
-  .pill{background:#f1fff9;border:1px solid var(--emerald-dark); border-radius:999px;padding:4px 8px; font-size:12px}
   .note{background:#f9fffd; border-left:4px solid var(--emerald-dark); padding:8px; border-radius:6px}
+  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace; font-size:12px; padding:2px 6px; border-radius:6px; background:#eef5ff; border:1px solid #aac7ff}
+  .pill{background:#f1fff9; border:1px solid var(--emerald-dark); border-radius:999px; padding:4px 8px; font-size:12px}
+  .sep{height:2px; background:#cfeee0; margin:8px 0}
+
+  .lightbox{position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:50; padding:16px}
+  .lightbox.active{display:flex}
+  .card{max-width:720px; width:96%; max-height:90vh; overflow:auto; background:#fff; border:4px solid var(--emerald-dark); border-radius:10px; padding:14px; box-shadow:var(--shadow)}
   .center{text-align:center}
-  .roll{
-    animation: bob 1.3s ease-in-out infinite;
-  }
+  .roll{animation:bob 1.3s ease-in-out infinite}
   @keyframes bob{0%{transform:translateY(0)}50%{transform:translateY(-3px)}100%{transform:translateY(0)}}
+
   .calendar{background:#fff; border:3px solid var(--emerald-dark); border-radius:10px; overflow:hidden}
   .cal-head{display:flex; align-items:center; justify-content:space-between; background:var(--panel-dark); padding:8px 10px; border-bottom:3px solid var(--emerald-dark)}
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr)}
@@ -135,6 +117,7 @@
   .cal-grid .cell:nth-child(7n){border-right:none}
   .cal-grid .cell .date{position:absolute; top:4px; right:6px; font-weight:700; opacity:.6}
   .cal-grid .taskdot{width:6px; height:6px; border-radius:50%; display:inline-block; margin:1px}
+  .taskdot.completed{outline:2px solid #2e7d32; opacity:.55}
   .cal-legend{display:flex; gap:10px; flex-wrap:wrap; margin:8px 0}
   .category-color-Fitness{background:#86e1ff}
   .category-color-Home{background:#ffbf86}
@@ -148,11 +131,18 @@
   .two{display:grid; grid-template-columns:1fr 1fr; gap:10px}
   @media (max-width:640px){.two{grid-template-columns:1fr}}
 
-  /* tiny pixel border around main panels */
-  .pixel {
-    outline: 3px solid var(--pixel);
-    outline-offset: -3px;
-  }
+  .pixel{outline:3px solid var(--pixel); outline-offset:-3px}
+
+  /* Date tabs */
+  .dateTab.active{ background:#fff; transform:translateY(1px) }
+
+  /* Collapsible completed block */
+  details.completed-block{border:2px dashed var(--emerald-dark); border-radius:8px; background:#f7fff9; padding:8px}
+  details.completed-block summary{cursor:pointer; font-weight:700; display:flex; align-items:center; gap:8px}
+  details.completed-block .list{ margin-top:8px }
+
+  /* Bank: golden placeholder for Gacha Roll */
+  .bank-card.gacha{ background:#fffbe6; border-color:#c8a600 }
 </style>
 </head>
 <body>
@@ -188,9 +178,7 @@
               <button class="btn-ghost right" id="editTrainerBtn">Edit</button>
             </div>
             <div class="small">SEXP:
-              <div class="sexpbar" title="Special EXP">
-                <span id="sexpFill" style="width:0%"></span>
-              </div>
+              <div class="sexpbar"><span id="sexpFill"></span></div>
               <div class="row small">
                 <span>Current: <span id="sexpCurrent">0</span> / <span id="sexpMax">100</span></span>
                 <button class="btn right" id="claimDailySexpBtn">Claim Daily SEXP</button>
@@ -291,6 +279,18 @@
           <label class="small"><input type="checkbox" id="hideRecurring"> Hide recurring</label>
         </div>
       </div>
+
+      <!-- Date filter -->
+      <div class="row" style="margin-top:6px">
+        <div class="row" role="tablist" aria-label="Date range">
+          <button class="btn-ghost dateTab" data-range="all">All Dates</button>
+          <button class="btn-ghost dateTab" data-range="today">Today</button>
+          <button class="btn-ghost dateTab" data-range="week">This Week</button>
+          <button class="btn-ghost dateTab" data-range="month">This Month</button>
+          <button class="btn-ghost dateTab" data-range="undated">Undated</button>
+        </div>
+      </div>
+
       <div class="sep"></div>
       <div id="taskList" class="list"></div>
     </div>
@@ -299,8 +299,8 @@
   <!-- TEAM -->
   <section id="team" class="screen">
     <div class="panel pixel">
-      <h3>Team (Category-bound slots)</h3>
-      <p class="small muted">Each slot represents a category. Use <b>BANK</b> to move a Pokémon out of a slot, or move one in from the Bank.</p>
+      <h3>Team (Slot-based levels)</h3>
+      <p class="small muted">Each slot = a category with its own <b>Level</b> and progress. Swapping Pokémon won’t change the slot’s level.</p>
       <div id="teamEdit" class="grid cols-2"></div>
     </div>
   </section>
@@ -327,7 +327,7 @@
         </div>
         <button class="btn roll" id="rollBtn">ROLL!</button>
       </div>
-      <p class="note small">When you have enough SEXP, pressing <b>ROLL!</b> spends it and grants you permission to use your wild encounter randomizer. After catching, add the mon to <b>Bank</b> and swap it into a Team slot (it will copy the replaced mon’s level).</p>
+      <p class="note small">Rolling spends SEXP and adds a golden <b>GACHA ROLL</b> placeholder to Bank. After your in-game encounter, edit it to the caught mon, then move it to a Team slot.</p>
     </div>
   </section>
 
@@ -390,10 +390,10 @@
             <div>
               <label>Units per level</label>
               <input type="number" id="unitsPerLevel" class="input" min="1" value="6">
-              <div class="small muted">How many “units” fill 1 level (i.e., one Rare Candy ready).</div>
+              <div class="small muted">How many “units” fill a slot level.</div>
             </div>
             <div>
-              <label>Low/Med/High task units</label>
+              <label>Low/Med/High units</label>
               <input id="unitsLMH" class="input" value="1,2,3">
               <div class="small muted">Comma-separated (e.g., 1,2,3)</div>
             </div>
@@ -416,7 +416,7 @@
               <input type="number" id="sexpVarBase" class="input" min="0" value="30">
             </div>
             <div>
-              <label>Variety step (+ each new)</label>
+              <label>Variety step (+ each)</label>
               <input type="number" id="sexpVarStep" class="input" min="0" value="20">
             </div>
           </div>
@@ -458,6 +458,18 @@
 </div>
 
 <script>
+/* ======= Hoenn badges ======= */
+const HOENN_BADGES = [
+  { name: 'Stone',   color: '#c0c0c0' },
+  { name: 'Knuckle', color: '#c59b7a' },
+  { name: 'Dynamo',  color: '#ffeb3b' },
+  { name: 'Heat',    color: '#ff8a65' },
+  { name: 'Balance', color: '#80cbc4' },
+  { name: 'Feather', color: '#e0e0e0' },
+  { name: 'Mind',    color: '#ce93d8' },
+  { name: 'Rain',    color: '#90caf9' }
+];
+
 /* ======= Storage & State ======= */
 const defaultState = () => ({
   trainer:{ name:"Trainer", sprite:null },
@@ -468,34 +480,41 @@ const defaultState = () => ({
   },
   sexp:0, lastDailySexp:null,
   variety:{ set:[], streak:1, lastCat:null },
-  team:{ // category-locked slots
-    Fitness:null, Home:null, Work:null, Skills:null, Finance:null, Other:null
+
+  /* SLOT-BASED LEVELS */
+  slots:{
+    Fitness:{level:1, progress:0},
+    Home:{level:1, progress:0},
+    Work:{level:1, progress:0},
+    Skills:{level:1, progress:0},
+    Finance:{level:1, progress:0},
+    Other:{level:1, progress:0}
   },
-  bank:[],
-  tasks:[], // {id,title,category,priority,date?,note,recurring:{type,interval}, completed:false, completions?:{[isoDate]:true}}
+
+  /* Occupants of slots */
+  team:{ Fitness:null, Home:null, Work:null, Skills:null, Finance:null, Other:null },
+
+  bank:[], // mons {id,species,nickname,image,isGacha?,levelSeen?}
+  tasks:[], // {id,title,category,priority,date?,note,recurring:{type,interval}, completed:false, completions?}
   badges:[false,false,false,false,false,false,false,false],
   whiteouts:0,
   calendar:{ month:(new Date()).getMonth(), year:(new Date()).getFullYear() }
 });
 let STATE = load();
 function load(){
-  const raw = localStorage.getItem('emeraldTaskParty');
-  if(!raw){ return defaultState(); }
   try{
-    const obj = JSON.parse(raw);
-    // migrate defaults
-    const d = defaultState();
-    return deepMerge(d, obj);
+    const raw = localStorage.getItem('emeraldTaskPartyV3');
+    return raw? deepMerge(defaultState(), JSON.parse(raw)) : defaultState();
   }catch(e){ console.error(e); return defaultState(); }
 }
-function save(){ localStorage.setItem('emeraldTaskParty', JSON.stringify(STATE)); }
+function save(){ try{ localStorage.setItem('emeraldTaskPartyV3', JSON.stringify(STATE)); }catch(e){ console.warn('Save failed', e); } }
 
 /* ======= Utils ======= */
 const $ = (q,p=document)=>p.querySelector(q);
 const $$ = (q,p=document)=>Array.from(p.querySelectorAll(q));
 const fmtDate = d => new Date(d).toISOString().slice(0,10);
 const todayISO = ()=> fmtDate(new Date());
-function uuid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+function uuid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
 function deepMerge(a,b){
   if(Array.isArray(a)){ return Array.isArray(b)? b : a; }
   if(typeof a==='object' && a){
@@ -505,37 +524,65 @@ function deepMerge(a,b){
   }
   return (b===undefined)? a : b;
 }
+function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
 
-/* ======= Experience Model (level-fractions) =======
-   - Units per level (UPL) controls how many “task units” make one level.
-   - Each task gives 1/UPL * (units by priority).
-   - Keeps levels per workload stable regardless of current level or growth curve.
-   - Growth curves are available for info & flavor (Fast/MedFast/MedSlow/Slow). */
-const Growth = {
-  FAST: l => Math.floor( 4 * Math.pow(l,3) / 5 ),
-  MED_FAST: l => Math.pow(l,3),
-  MED_SLOW: l => Math.floor( (6/5)*Math.pow(l,3) - 15*Math.pow(l,2) + 100*l - 140 ),
-  SLOW: l => Math.floor( 5 * Math.pow(l,3) / 4 ),
-};
-const GrowthNames = ["Fast","Medium Fast","Medium Slow","Slow"];
-function levelInfo(mon){
-  const L = mon.level ?? 1;
-  const grow = (mon.growth||"Medium Fast");
-  const f = (grow==="Fast")? Growth.FAST
-         : (grow==="Medium Slow")? Growth.MED_SLOW
-         : (grow==="Slow")? Growth.SLOW
-         : Growth.MED_FAST;
-  const total = (L>=1)? f(L):0;
-  const next = (L<100)? f(L+1):f(100);
-  const need = Math.max(0,next-total);
-  return { total, next, need };
+function defaultOccurrenceISO(t){ return t.date || todayISO(); }
+function isTaskCompleted(t, isoOverride=null){
+  if(t.recurring?.type !== 'none'){
+    const iso = isoOverride || defaultOccurrenceISO(t);
+    return !!(t.completions && t.completions[iso]);
+  }
+  return !!t.completed;
 }
-/* Fraction helpers */
+
+/* Date range helpers */
+function startOfToday(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
+function endOfToday(){ const d=new Date(); d.setHours(23,59,59,999); return d; }
+function startOfWeek(){ const d=startOfToday(); const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day); return d; } // Monday
+function endOfWeek(){ const d=startOfWeek(); d.setDate(d.getDate()+6); d.setHours(23,59,59,999); return d; }
+function startOfMonth(){ const n=new Date(); return new Date(n.getFullYear(), n.getMonth(), 1); }
+function endOfMonth(){ const n=new Date(); return new Date(n.getFullYear(), n.getMonth()+1, 0, 23,59,59,999); }
+function isWithin(dateISO, range){
+  if(!dateISO){ return range==='undated' ? true : (range==='all'); }
+  const d = new Date(dateISO);
+  if(range==='all') return true;
+  if(range==='today') return d>=startOfToday() && d<=endOfToday();
+  if(range==='week') return d>=startOfWeek() && d<=endOfWeek();
+  if(range==='month') return d>=startOfMonth() && d<=endOfMonth();
+  if(range==='undated') return false;
+  return true;
+}
+
+/* ======= Experience Model ======= */
 function unitsPerLevel(){ return Math.max(1, Number(STATE.settings.unitsPerLevel)||6); }
 function unitsForPriority(priority){
   const arr=STATE.settings.unitsLMH||[1,2,3];
   const safe=[Number(arr[0])||1, Number(arr[1])||2, Number(arr[2])||3];
   return (priority==="Low")? safe[0] : (priority==="High")? safe[2] : safe[1];
+}
+function awardProgress(category, priority){
+  const slot = STATE.slots[category]; if(!slot) return;
+  const add = unitsForPriority(priority) / unitsPerLevel();
+  slot.progress = (slot.progress||0) + add;
+  while(slot.progress >= 1 && slot.level < 100){
+    slot.progress -= 1;
+    slot.level += 1;
+  }
+}
+
+/* ======= SEXP ======= */
+function awardSEXP(category){
+  const v = STATE.variety;
+  if(v.set.includes(category) || v.lastCat===category){
+    v.set = [category]; v.streak = 1;
+  }else{
+    v.set.push(category); v.streak = v.set.length;
+  }
+  v.lastCat = category;
+  const base = Number(STATE.settings.sexpVarBase)||30;
+  const step = Number(STATE.settings.sexpVarStep)||20;
+  let gain = 0; if(v.streak>=2) gain = base + (v.streak-2)*step;
+  STATE.sexp = Math.max(0, Math.floor(STATE.sexp + gain));
 }
 
 /* ======= Rendering ======= */
@@ -548,23 +595,11 @@ $('#tabs').addEventListener('click', e=>{
   window.scrollTo(0,0);
   render();
 });
-$$('[data-screen-jump]').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const scr = btn.getAttribute('data-screen-jump');
-    $(`#tabs button[data-screen="${scr}"]`).click();
-  });
-});
+$$('[data-screen-jump]').forEach(btn=> btn.addEventListener('click', ()=> $(`#tabs button[data-screen="${btn.dataset.screenJump}"]`).click() ));
 
 function render(){
-  renderSummary();
-  renderTeamGrid();
-  renderTasks();
-  renderTeamEdit();
-  renderBank();
-  renderGacha();
-  renderProgress();
-  renderCalendar();
-  renderSettings();
+  renderSummary(); renderTeamGrid(); renderTasks(); renderTeamEdit(); renderBank();
+  renderGacha(); renderProgress(); renderCalendar(); renderSettings();
 }
 function renderSummary(){
   $('#trainerName').textContent = STATE.trainer.name || "Trainer";
@@ -572,36 +607,31 @@ function renderSummary(){
   else $('#trainerSprite').src = 'data:image/svg+xml;utf8,'+encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect width="100%" height="100%" fill="#ffffff"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#1c9e57" font-size="10" font-family="monospace">Trainer</text></svg>`
   );
-
   const t = STATE.sexp, max = STATE.settings.sexpThreshold;
   $('#sexpCurrent').textContent = t; $('#sexpMax').textContent = max;
   $('#sexpCurrent2').textContent = t; $('#sexpMax2').textContent = max;
   $('#sexpFill').style.width = Math.min(100, t/max*100) + '%';
   $('#sexpFill2').style.width = Math.min(100, t/max*100) + '%';
   $('#varietyStreak').textContent = STATE.variety.streak || 1;
-
-  const bcount = STATE.badges.filter(Boolean).length;
-  $('#badgeCount').textContent = bcount;
+  $('#badgeCount').textContent = STATE.badges.filter(Boolean).length;
   $('#whiteouts').textContent = STATE.whiteouts;
 }
 function renderTeamGrid(){
-  const grid = $('#teamGrid');
-  grid.innerHTML = '';
-  const cats = Object.keys(STATE.team);
-  cats.forEach(cat=>{
+  const grid = $('#teamGrid'); grid.innerHTML='';
+  for(const cat of Object.keys(STATE.team)){
     const mon = STATE.team[cat];
-    const div = document.createElement('div');
-    div.className='mon';
+    const slot = STATE.slots[cat];
+    const div = document.createElement('div'); div.className='mon';
     if(mon){
       div.innerHTML = `
         <img src="${mon.image||placeholderMon(cat)}" alt="${mon.nickname||mon.species}">
         <div>
           <div class="row">
             <div class="label">${mon.nickname||mon.species} <span class="cat-pill">${cat}</span></div>
-            <div class="right">Lv. ${mon.level||1}</div>
+            <div class="right">Lv. ${slot.level}</div>
           </div>
-          <div class="xpbar"><span style="width:${Math.min(100,(mon.progress||0)*100)}%"></span></div>
-          <div class="small muted">Growth: ${mon.growth||'Medium Fast'}</div>
+          <div class="xpbar"><span style="width:${Math.min(100,(slot.progress||0)*100)}%"></span></div>
+          <div class="small muted">Slot level persists across swaps</div>
         </div>`;
     }else{
       div.innerHTML = `
@@ -612,37 +642,66 @@ function renderTeamGrid(){
         </div>`;
     }
     grid.appendChild(div);
-  });
+  }
 }
 function placeholderMon(cat){
-  const col = {
-    Fitness:'#86e1ff', Home:'#ffbf86', Work:'#ffd5e1',
-    Skills:'#a4ffa6', Finance:'#faff86', Other:'#d6cfff'
-  }[cat]||'#e6f7ee';
+  const col = { Fitness:'#86e1ff', Home:'#ffbf86', Work:'#ffd5e1', Skills:'#a4ffa6', Finance:'#faff86', Other:'#d6cfff' }[cat]||'#e6f7ee';
   return 'data:image/svg+xml;utf8,'+encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="100%" height="100%" fill="${col}"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#0a4e2b" font-family="monospace" font-size="10">${cat}</text></svg>`
   );
 }
 
-function renderTasks(filter='current'){
+/* Date filter state */
+let CURRENT_DATE_RANGE = 'all';
+
+function renderTasks(){
   const activeTab = $('.taskTab.active')?.dataset.filter || 'All';
   const hideRec = $('#hideRecurring').checked;
-  const list = $('#taskList');
-  list.innerHTML='';
-  const tasks = STATE.tasks.filter(t => (activeTab==='All'||t.category===activeTab) && (!hideRec || t.recurring?.type==='none'));
-  if(!tasks.length){ list.innerHTML = `<div class="small muted">No tasks here—add some! ✔️</div>`; return; }
+  const range = CURRENT_DATE_RANGE || 'all';
+
+  const listWrap = $('#taskList');
+  listWrap.innerHTML='';
+
+  // Filter by category + recurring toggle + date range
+  let tasks = STATE.tasks.filter(t => (activeTab==='All'||t.category===activeTab));
+  if(hideRec) tasks = tasks.filter(t=>t.recurring?.type==='none');
+
+  tasks = tasks.filter(t=>{
+    if(range==='undated') return !t.date;
+    if(range==='all') return true;
+    return isWithin(t.date, range);
+  });
+
+  // Sort by date then title
   tasks.sort((a,b)=>{
     const da = a.date||'', db=b.date||'';
-    return (da===db)? a.title.localeCompare(b.title) : (da<db?-1:1);
+    if(da===db) return a.title.localeCompare(b.title);
+    if(!da) return 1; if(!db) return -1;
+    return da<db? -1: 1;
   });
+
+  if(!tasks.length){
+    listWrap.innerHTML = `<div class="small muted">No tasks here—try another filter. ✔️</div>`;
+    return;
+  }
+
+  // Split into incomplete vs completed (default occurrence reference)
+  const incompletes = [];
+  const completes = [];
   for(const t of tasks){
-    const card = document.createElement('div');
-    card.className='task';
+    const occISO = defaultOccurrenceISO(t);
+    (isTaskCompleted(t, occISO) ? completes : incompletes).push({task:t, occISO});
+  }
+
+  // Incomplete tasks
+  for(const {task:t} of incompletes){
     const due = t.date? ` · due ${t.date}`:'';
     const rec = (t.recurring?.type!=='none')? ` · ${t.recurring.type} x${t.recurring.interval||1}`:'';
+    const card = document.createElement('div');
+    card.className='task';
     card.innerHTML = `
       <div class="row">
-        <div><b>${t.title}</b> <span class="pill">${t.category}</span> <span class="pill">Pri: ${t.priority}</span> <span class="muted small">${due}${rec}</span></div>
+        <div><b class="tTitle">${t.title}</b> <span class="pill">${t.category}</span> <span class="pill">Pri: ${t.priority}</span> <span class="muted small">${due}${rec}</span></div>
         <div>
           <button class="btn" data-act="complete" data-id="${t.id}">Complete</button>
           <button class="btn-danger" data-act="delete" data-id="${t.id}">Delete</button>
@@ -651,46 +710,72 @@ function renderTasks(filter='current'){
       </div>
       ${t.note? `<div class="note small">${t.note}</div>`:''}
     `;
-    list.appendChild(card);
+    listWrap.appendChild(card);
+  }
+
+  // Collapsible completed section
+  if(completes.length){
+    const det = document.createElement('details');
+    det.className='completed-block';
+    det.open = false;
+    const sum = document.createElement('summary');
+    sum.innerHTML = `Completed (${completes.length})`;
+    det.appendChild(sum);
+
+    const completedList = document.createElement('div');
+    completedList.className='list';
+
+    for(const {task:t} of completes){
+      const due = t.date? ` · due ${t.date}`:'';
+      const rec = (t.recurring?.type!=='none')? ` · ${t.recurring.type} x${t.recurring.interval||1}`:'';
+      const card = document.createElement('div');
+      card.className='task done';
+      card.innerHTML = `
+        <div class="row">
+          <div><b class="tTitle">${t.title}</b> <span class="pill">${t.category}</span> <span class="pill">Pri: ${t.priority}</span> <span class="muted small">${due}${rec}</span></div>
+          <div>
+            <button class="btn" data-act="complete" data-id="${t.id}" disabled>Complete</button>
+            <button class="btn-danger" data-act="delete" data-id="${t.id}">Delete</button>
+            <button class="btn-ghost" data-act="view" data-id="${t.id}">Info</button>
+          </div>
+        </div>
+        ${t.note? `<div class="note small">${t.note}</div>`:''}
+      `;
+      completedList.appendChild(card);
+    }
+
+    det.appendChild(completedList);
+    listWrap.appendChild(det);
   }
 }
 
 function renderTeamEdit(){
-  const wrap = $('#teamEdit');
-  wrap.innerHTML='';
+  const wrap = $('#teamEdit'); wrap.innerHTML='';
   for(const cat of Object.keys(STATE.team)){
     const mon = STATE.team[cat];
-    const card = document.createElement('div');
-    card.className='panel';
+    const slot = STATE.slots[cat];
+    const card = document.createElement('div'); card.className='panel';
     if(mon){
-      const { total, next, need } = levelInfo(mon);
       card.innerHTML = `
         <div class="row">
           <div class="label">${mon.nickname||mon.species} <span class="cat-pill">${cat}</span></div>
-          <div class="right">Lv. ${mon.level}</div>
+          <div class="right">Lv. ${slot.level}</div>
         </div>
         <div class="row" style="margin:8px 0">
           <img src="${mon.image||placeholderMon(cat)}" style="width:80px;height:80px;border-radius:8px;border:2px solid var(--emerald-dark);background:#fff">
           <div class="grow">
-            <div class="small">Progress to next level</div>
-            <div class="xpbar"><span style="width:${(mon.progress||0)*100}%"></span></div>
-            <div class="small muted">Gen3 curve: ${mon.growth||'Medium Fast'} · Need ~${need.toLocaleString()} XP (flavor)</div>
+            <div class="small">Slot progress</div>
+            <div class="xpbar"><span style="width:${(slot.progress||0)*100}%"></span></div>
             <div class="two" style="margin-top:6px">
               <div><label>Nickname</label><input class="input" data-edit="nick" data-cat="${cat}" value="${mon.nickname||''}"></div>
               <div><label>Species</label><input class="input" data-edit="species" data-cat="${cat}" value="${mon.species||''}"></div>
             </div>
             <div class="two" style="margin-top:6px">
-              <div><label>Level</label><input type="number" min="1" max="100" class="input" data-edit="level" data-cat="${cat}" value="${mon.level||1}"></div>
+              <div><label>Slot Level</label><input type="number" min="1" max="100" class="input" data-edit="slotlevel" data-cat="${cat}" value="${slot.level}"></div>
               <div>
-                <label>Growth</label>
-                <select class="input" data-edit="growth" data-cat="${cat}">
-                  ${GrowthNames.map(n=>`<option ${mon.growth===n? 'selected':''}>${n}</option>`).join('')}
-                </select>
+                <label>Portrait</label>
+                <input type="file" accept="image/*" data-edit="image" data-cat="${cat}">
               </div>
-            </div>
-            <div style="margin-top:6px">
-              <label>Portrait</label>
-              <input type="file" accept="image/*" data-edit="image" data-cat="${cat}">
             </div>
           </div>
         </div>
@@ -703,6 +788,10 @@ function renderTeamEdit(){
       card.innerHTML = `
         <div class="label">Empty <span class="cat-pill">${cat}</span></div>
         <div class="small muted" style="margin:6px 0">Move a Pokémon here from Bank.</div>
+        <div class="two" style="margin-top:6px">
+          <div><label>Slot Level</label><input type="number" min="1" max="100" class="input" data-edit="slotlevel" data-cat="${cat}" value="${slot.level}"></div>
+          <div></div>
+        </div>
       `;
     }
     wrap.appendChild(card);
@@ -714,11 +803,11 @@ function renderBank(){
   if(!STATE.bank.length){ list.innerHTML = `<div class="small muted">Bank is empty.</div>`; return; }
   for(const m of STATE.bank){
     const el = document.createElement('div');
-    el.className='panel';
+    el.className='panel bank-card'+(m.isGacha?' gacha':'');
     el.innerHTML = `
       <div class="row">
         <div class="label">${m.nickname||m.species}</div>
-        <div class="right">Lv. ${m.level||1}</div>
+        <div class="right">${m.levelSeen? `Lv. ${m.levelSeen}` : ''}</div>
       </div>
       <img src="${m.image||placeholderMon('Other')}" style="width:100%;height:160px;object-fit:cover;border:2px solid var(--emerald-dark);border-radius:8px;background:#fff">
       <div class="two" style="margin-top:6px">
@@ -740,72 +829,91 @@ function renderBank(){
     list.appendChild(el);
   }
 }
-
-function renderGacha(){
-  // summary bars already updated in renderSummary
-  // nothing extra here
-}
+function renderGacha(){ /* bars updated in summary */ }
 
 function renderProgress(){
   $('#whiteoutsVal').textContent = STATE.whiteouts;
   const badgeWrap = $('#badges'); badgeWrap.innerHTML='';
   for(let i=0;i<8;i++){
     const on = !!STATE.badges[i];
+    const meta = HOENN_BADGES[i];
     const b = document.createElement('button');
-    b.className='btn';
-    b.dataset.badge=i;
-    b.textContent = on? `Badge ${i+1} ✓` : `Badge ${i+1} ×`;
-    if(on) b.style.background='#e8fff2';
+    b.className='btn'; b.dataset.badge=i; b.style.margin='4px 0';
+    if(on){ b.style.background=meta.color; b.style.color='#0a4e2b'; b.innerHTML=`${meta.name} ✓`; }
+    else{ b.style.background='#fff'; b.style.opacity=.7; b.innerHTML=`${meta.name} ×`; }
     badgeWrap.appendChild(b);
   }
+  $('#badgeCount').textContent = STATE.badges.filter(Boolean).length;
 }
 
 function firstOfMonth(y,m){ return new Date(y,m,1); }
 function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
+function occurrencesOnDate(iso){
+  const list = STATE.tasks.filter(t=>{
+    if(t.recurring?.type==='none'){ return (t.date? t.date===iso : false); }
+    const start = t.date? new Date(t.date) : null;
+    const target = new Date(iso);
+    const interval = Math.max(1, t.recurring.interval||1);
+    if(t.recurring.type==='daily'){ if(!start) return true; const diff=Math.floor((target-start)/86400000); return diff>=0 && diff%interval===0; }
+    if(t.recurring.type==='weekly'){ if(!start) return true; const diff=Math.floor((target-start)/86400000); return diff>=0 && Math.floor(diff/7)%interval===0 && start.getDay()===target.getDay(); }
+    if(t.recurring.type==='monthly'){ if(!start) return true; const months=(target.getFullYear()-start.getFullYear())*12+(target.getMonth()-start.getMonth()); return months>=0 && months%interval===0 && target.getDate()===start.getDate(); }
+    return false;
+  });
+  return list.filter(t=> !(t.recurring?.type!=='none' && t.completions?.[iso]));
+}
 function renderCalendar(){
   const {year, month} = STATE.calendar;
   $('#calTitle').textContent = new Date(year, month, 1).toLocaleString(undefined,{month:'long', year:'numeric'});
   const grid = $('#calGrid'); grid.innerHTML='';
   const start = firstOfMonth(year, month);
-  const dow = (start.getDay()+6)%7; // make Monday first (0..6)
+  const dow = (start.getDay()+6)%7; // Monday-first
   const dim = daysInMonth(year, month);
   const hideRec = $('#calHideRecurring').checked;
-  for(let i=0;i<dow;i++){
-    const cell = document.createElement('div');
-    cell.className='cell'; grid.appendChild(cell);
-  }
-  for(let day=1;day<=dim;day++){
+
+  for(let i=0;i<dow;i++){ const c=document.createElement('div'); c.className='cell'; grid.appendChild(c); }
+  for(let day=1; day<=dim; day++){
     const d = new Date(year, month, day); const iso = fmtDate(d);
     const cell = document.createElement('div'); cell.className='cell';
     cell.innerHTML = `<div class="date">${day}</div><div class="dots"></div>`;
     const dots = cell.querySelector('.dots');
     const tasks = occurrencesOnDate(iso).filter(t=> !hideRec || t.recurring?.type==='none');
+
     for(const t of tasks){
+      const done = isTaskCompleted(t, iso);
       const dot = document.createElement('span');
-      dot.className = 'taskdot category-color-'+t.category;
-      dot.title = `${t.title} [${t.category}]`;
+      dot.className = 'taskdot category-color-'+t.category + (done? ' completed':'');
+      dot.title = `${t.title} [${t.category}]` + (done? ' ✔️':'');
       dots.appendChild(dot);
     }
+
     cell.addEventListener('click', ()=>{
-      // lightbox for the day
-      const list = tasks.map(t=>`<li>${t.title} <span class="pill">${t.category}</span> <button class="btn" data-quick-complete="${t.id}" data-date="${iso}">Complete</button></li>`).join('');
+      const list = tasks.map(t=>{
+        const done = isTaskCompleted(t, iso);
+        const title = done ? `<span style="text-decoration:line-through;opacity:.7">${t.title}</span>` : t.title;
+        return `<li>${title} <span class="pill">${t.category}</span>
+                  <button class="btn" data-quick-complete="${t.id}" data-date="${iso}" ${done?'disabled':''}>Complete</button>
+                </li>`;
+      }).join('');
       showTaskLightbox({
-        title: `Tasks on ${iso}`,
+        title:`Tasks on ${iso}`,
         html: list? `<ul>${list}</ul>`:'<div class="small muted">No tasks.</div>',
         allowComplete:false, taskId:null
       });
-      // wire quick complete
       $('#taskLightbox').querySelectorAll('[data-quick-complete]').forEach(btn=>{
-        btn.addEventListener('click',()=>{
-          completeTask(btn.getAttribute('data-quick-complete'), iso);
-        });
+        btn.addEventListener('click',()=> completeTask(btn.getAttribute('data-quick-complete'), btn.getAttribute('data-date')));
       });
     });
+
     grid.appendChild(cell);
   }
 }
 
-/* ======= Task creation & interactions ======= */
+/* ======= Events ======= */
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey||e.metaKey) && e.key==='Enter'){
+    const f = $('#taskForm'); if(f && $('#create').classList.contains('active')) f.requestSubmit();
+  }
+});
 $('#taskForm').addEventListener('submit', e=>{
   e.preventDefault();
   const fd = new FormData(e.target);
@@ -816,20 +924,11 @@ $('#taskForm').addEventListener('submit', e=>{
     priority: fd.get('priority'),
     date: fd.get('date')||null,
     note: (fd.get('note')||'').toString(),
-    recurring:{
-      type: fd.get('recurring')||'none',
-      interval: Math.max(1, Number(fd.get('interval')||1))
-    },
+    recurring:{ type: fd.get('recurring')||'none', interval: Math.max(1, Number(fd.get('interval')||1)) },
     completed:false
   };
   STATE.tasks.push(t); save(); e.target.reset(); renderTasks(); alert('Task added ✔️');
 });
-document.addEventListener('keydown', e=>{
-  if((e.ctrlKey||e.metaKey) && e.key==='Enter'){
-    const f = $('#taskForm'); if(f && $('#create').classList.contains('active')) f.requestSubmit();
-  }
-});
-
 $('#taskList').addEventListener('click', e=>{
   const act = e.target.getAttribute('data-act'); if(!act) return;
   const id = e.target.getAttribute('data-id');
@@ -837,109 +936,42 @@ $('#taskList').addEventListener('click', e=>{
   else if(act==='complete'){ completeTask(id); }
   else if(act==='view'){ openTask(id); }
 });
-
 function openTask(id){
   const t = STATE.tasks.find(x=>x.id===id); if(!t) return;
+  const done = isTaskCompleted(t);
   showTaskLightbox({
     title:t.title,
     html: `
       <div class="row"><span class="pill">${t.category}</span><span class="pill">Priority: ${t.priority}</span>${t.date? `<span class="pill">Due ${t.date}</span>`:''}</div>
       ${t.note? `<div class="note" style="margin-top:8px">${t.note}</div>`:''}
       <div class="small muted" style="margin-top:8px">Recurring: ${t.recurring?.type||'none'} x${t.recurring?.interval||1}</div>
+      ${done? `<div class="small" style="margin-top:6px;color:#2e7d32">✔️ Completed</div>`:''}
     `,
-    allowComplete:true, taskId: id
+    allowComplete: !done, taskId: id
   });
 }
 function deleteTask(id){
   const i = STATE.tasks.findIndex(x=>x.id===id); if(i<0) return;
   if(!confirm('Delete this task?')) return;
-  STATE.tasks.splice(i,1); save(); renderTasks(); renderCalendar();
+  STATE.tasks.splice(i,1); save(); render();
 }
 function completeTask(id, dateOverride=null){
   const t = STATE.tasks.find(x=>x.id===id); if(!t) return;
-  const whenISO = dateOverride || (t.date||todayISO());
-  // Mark completion (for recurring, track occurrences)
-  if(t.recurring?.type!=='none'){
+  const whenISO = dateOverride || defaultOccurrenceISO(t);
+
+  if(t.recurring?.type !== 'none'){
     t.completions = t.completions||{};
-    t.completions[whenISO]=true;
+    if(t.completions[whenISO]){ alert('This occurrence is already completed.'); return; }
+    t.completions[whenISO] = true;
   }else{
-    t.completed=true;
+    if(t.completed){ alert('Task already completed.'); return; }
+    t.completed = true;
   }
-  // Award level progress
+
   awardProgress(t.category, t.priority);
-  // SEXP via variety
   awardSEXP(t.category);
+
   save(); render(); alert('Task completed! Rare Candy progress gained ✨');
-}
-
-function occurrencesOnDate(iso){
-  // Generate all tasks that occur on date `iso`
-  const d = STATE.tasks.filter(t=>{
-    if(t.recurring?.type==='none'){
-      return (t.date? t.date===iso : false);
-    }
-    // recurring
-    const start = t.date? new Date(t.date) : null;
-    const target = new Date(iso);
-    const interval = Math.max(1, t.recurring.interval||1);
-    if(t.recurring.type==='daily'){
-      if(!start) return true; // floating daily
-      const diff = Math.floor((target-start)/86400000);
-      return diff>=0 && diff%interval===0;
-    }
-    if(t.recurring.type==='weekly'){
-      if(!start) return true;
-      const diff = Math.floor((target-start)/86400000);
-      return diff>=0 && Math.floor(diff/7)%interval===0 && start.getDay()===target.getDay();
-    }
-    if(t.recurring.type==='monthly'){
-      if(!start) return true;
-      const sMonth = start.getMonth(), sDate = start.getDate();
-      // occurs each N months on the same date number (best effort)
-      const monthsBetween = (target.getFullYear()-start.getFullYear())*12 + (target.getMonth()-sMonth);
-      return monthsBetween>=0 && monthsBetween%interval===0 && target.getDate()===sDate;
-    }
-    return false;
-  });
-  // Filter out recurring tasks already completed that day
-  return d.filter(t=> !(t.recurring?.type!=='none' && t.completions?.[iso]));
-}
-
-/* ======= Level progress & SEXP awarding ======= */
-function awardProgress(category, priority){
-  const units = unitsForPriority(priority);
-  const add = units / unitsPerLevel();
-  const mon = STATE.team[category];
-  if(!mon){
-    alert(`No Pokémon assigned to ${category}. Add one in Team/Bank first.`);
-    return;
-  }
-  mon.progress = (mon.progress||0) + add;
-  while(mon.progress >= 1 && (mon.level||1) < 100){
-    mon.progress -= 1;
-    mon.level = (mon.level||1)+1;
-    // Flavor: you earned a Rare Candy’s worth of progress
-    // (Feed a Rare Candy in-game to keep parity.)
-  }
-}
-
-function awardSEXP(category){
-  const v = STATE.variety;
-  // unique-category streak (no repeats inside streak)
-  if(v.set.includes(category) || v.lastCat===category){
-    v.set = [category];
-    v.streak = 1;
-  }else{
-    v.set.push(category);
-    v.streak = v.set.length;
-  }
-  v.lastCat = category;
-
-  const base = Number(STATE.settings.sexpVarBase)||30;
-  const step = Number(STATE.settings.sexpVarStep)||20;
-  let gain = 0;
-  if(v.streak>=2) gain = base + (v.streak-2)*step;
-  STATE.sexp = Math.max(0, Math.floor(STATE.sexp + gain));
 }
 
 /* ======= Lightboxes ======= */
@@ -961,30 +993,14 @@ function showPokemonEditor(mon, onSave){
       <div><label>Species</label><input class="input" id="pmSpecies" value="${mon.species||''}"></div>
       <div><label>Nickname</label><input class="input" id="pmNick" value="${mon.nickname||''}"></div>
     </div>
-    <div class="two" style="margin-top:6px">
-      <div><label>Level</label><input type="number" min="1" max="100" class="input" id="pmLevel" value="${mon.level||1}"></div>
-      <div>
-        <label>Growth Rate</label>
-        <select class="input" id="pmGrowth">
-          ${GrowthNames.map(n=>`<option ${mon.growth===n? 'selected':''}>${n}</option>`).join('')}
-        </select>
-      </div>
-    </div>
     <div style="margin-top:6px">
       <label>Portrait</label>
       <input type="file" accept="image/*" id="pmImg">
     </div>
   `;
   $('#plbSave').onclick = async ()=>{
-    const upd = {
-      ...mon,
-      species: $('#pmSpecies').value.trim()||'Unknown',
-      nickname: $('#pmNick').value.trim(),
-      level: Math.max(1, Math.min(100, Number($('#pmLevel').value||1))),
-      growth: $('#pmGrowth').value,
-    };
-    const file = $('#pmImg').files?.[0];
-    if(file){ upd.image = await fileToDataURL(file); }
+    const upd = {...mon, species: $('#pmSpecies').value.trim()||'Unknown', nickname: $('#pmNick').value.trim()};
+    const file = $('#pmImg').files?.[0]; if(file){ upd.image = await fileToDataURL(file); }
     onSave(upd); $('#pokemonLightbox').classList.remove('active'); save(); render();
   };
   $('#plbClose').onclick = ()=> $('#pokemonLightbox').classList.remove('active');
@@ -993,34 +1009,30 @@ function showPokemonEditor(mon, onSave){
 
 /* ======= Team/Bank actions ======= */
 $('#teamEdit').addEventListener('click', async e=>{
-  const act = e.target.getAttribute('data-act');
-  if(!act) return;
+  const act = e.target.getAttribute('data-act'); if(!act) return;
   const cat = e.target.getAttribute('data-cat');
   const mon = STATE.team[cat];
   if(act==='bankMon'){
     if(!mon) return;
-    if(!confirm('Move this Pokémon to Bank (slot will be empty)?')) return;
+    if(!confirm('Move this Pokémon to Bank (slot remains same level)?')) return;
+    mon.levelSeen = STATE.slots[cat].level;
     STATE.bank.push(mon); STATE.team[cat]=null; save(); render();
   }else if(act==='saveMon'){
-    if(!mon) return;
-    // read inline edits
-    const nick = $(`input[data-edit="nick"][data-cat="${cat}"]`).value.trim();
-    const species = $(`input[data-edit="species"][data-cat="${cat}"]`).value.trim()||'Unknown';
-    const level = Math.max(1, Math.min(100, Number($(`input[data-edit="level"][data-cat="${cat}"]`).value||1)));
-    const growth = $(`select[data-edit="growth"][data-cat="${cat}"]`).value;
-    const file = $(`input[data-edit="image"][data-cat="${cat}"]`).files?.[0];
-    mon.nickname=nick; mon.species=species; mon.level=level; mon.growth=growth;
-    if(file){ mon.image = await fileToDataURL(file); }
+    const slot = STATE.slots[cat];
+    if(mon){
+      mon.nickname = $(`input[data-edit="nick"][data-cat="${cat}"]`).value.trim();
+      mon.species = $(`input[data-edit="species"][data-cat="${cat}"]`).value.trim()||'Unknown';
+      const file = $(`input[data-edit="image"][data-cat="${cat}"]`).files?.[0];
+      if(file){ mon.image = await fileToDataURL(file); }
+    }
+    const newLevel = Math.max(1, Math.min(100, Number($(`input[data-edit="slotlevel"][data-cat="${cat}"]`).value||slot.level)));
+    slot.level = newLevel;
     save(); render();
   }
 });
 
 $('#addBankPokemonBtn').addEventListener('click', ()=>{
-  showPokemonEditor({ level:1, growth:'Medium Fast', progress:0 }, mon=>{
-    mon.id = uuid();
-    mon.progress = mon.progress||0;
-    STATE.bank.push(mon);
-  });
+  showPokemonEditor({}, mon=>{ mon.id = uuid(); STATE.bank.push(mon); });
 });
 
 $('#bankList').addEventListener('click', e=>{
@@ -1032,49 +1044,34 @@ $('#bankList').addEventListener('click', e=>{
   }
   if(act==='editBank'){
     const mon = STATE.bank.find(m=>m.id===id); if(!mon) return;
-    showPokemonEditor(mon, upd=>{
-      Object.assign(mon, upd);
-    });
+    showPokemonEditor(mon, upd=> Object.assign(mon, upd));
   }
   if(act==='moveToTeam'){
-    const sel = $(`[data-bank-move="${id}"]`);
-    const cat = sel?.value;
-    if(!cat) return;
+    const sel = $(`[data-bank-move="${id}"]`); const cat = sel?.value; if(!cat) return;
     const mon = STATE.bank.find(m=>m.id===id); if(!mon) return;
-    // If slot occupied, adopt the level
+
     if(STATE.team[cat]){
       const replaced = STATE.team[cat];
-      mon.level = replaced.level; // carry over level
-      // Move replaced to Bank
       replaced.id = replaced.id || uuid();
+      replaced.levelSeen = STATE.slots[cat].level;
       STATE.bank.push(replaced);
     }
-    // Place and remove from bank
     STATE.team[cat] = mon;
     STATE.bank = STATE.bank.filter(m=>m.id!==id);
     save(); render();
   }
 });
 
-/* ======= Trainer edits & daily SEXP ======= */
-$('#editTrainerBtn').addEventListener('click', ()=>{
-  // jump to settings trainer panel
-  $(`#tabs button[data-screen="settings"]`).click();
-  $('#setTrainerName').focus();
-});
-$('#setTrainerName').addEventListener('input', e=>{
-  STATE.trainer.name = e.target.value; save(); renderSummary();
-});
-$('#setTrainerSprite').addEventListener('change', async e=>{
-  const f = e.target.files?.[0]; if(!f) return;
-  STATE.trainer.sprite = await fileToDataURL(f); save(); renderSummary();
-});
+/* ======= Trainer & SEXP ======= */
+$('#editTrainerBtn').addEventListener('click', ()=>{ $(`#tabs button[data-screen="settings"]`).click(); $('#setTrainerName').focus(); });
+$('#setTrainerName').addEventListener('input', e=>{ STATE.trainer.name = e.target.value; save(); renderSummary(); });
+$('#setTrainerSprite').addEventListener('change', async e=>{ const f=e.target.files?.[0]; if(!f) return; STATE.trainer.sprite = await fileToDataURL(f); save(); renderSummary(); });
+
 $('#claimDailySexpBtn').addEventListener('click', ()=>{
   const today = todayISO();
   if(STATE.lastDailySexp === today){ alert('Already claimed today.'); return; }
   STATE.lastDailySexp = today;
-  const add = Number(STATE.settings.sexpDaily)||0;
-  STATE.sexp = Math.floor(STATE.sexp + add);
+  STATE.sexp = Math.floor(STATE.sexp + (Number(STATE.settings.sexpDaily)||0));
   save(); renderSummary();
 });
 
@@ -1084,28 +1081,38 @@ $('#rollBtn').addEventListener('click', ()=>{
   if(STATE.sexp < thresh){ alert('Not enough SEXP yet!'); return; }
   if(!confirm(`Spend ${thresh} SEXP to gain a roll permission?`)) return;
   STATE.sexp -= thresh;
-  save(); renderSummary();
-  alert('Permission granted! Use your randomizer in-game, then add the new Pokémon to Bank from the Bank screen.');
+
+  // Golden placeholder
+  const goldSvg = (w=400,h=160)=> 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff3b0"/><stop offset="50%" stop-color="#ffd54f"/><stop offset="100%" stop-color="#fbc02d"/></linearGradient></defs>
+      <rect width="100%" height="100%" fill="url(#g)"/>
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#5d4a00"
+            font-family="monospace" font-size="22">GACHA ROLL</text></svg>`
+  );
+  const placeholder = { id: uuid(), species:'GACHA ROLL', nickname:'', image:goldSvg(), isGacha:true };
+  STATE.bank.push(placeholder);
+
+  save(); renderSummary(); renderBank();
+  alert('Permission granted! A “GACHA ROLL” placeholder was added to your Bank.');
 });
 
 /* ======= Progress ======= */
 $('#incWhiteout').addEventListener('click', ()=>{ STATE.whiteouts++; save(); renderProgress(); });
 $('#badges').addEventListener('click', e=>{
   const i = e.target.getAttribute('data-badge'); if(i===null) return;
-  const idx = Number(i);
-  STATE.badges[idx] = !STATE.badges[idx];
+  const idx = Number(i); STATE.badges[idx] = !STATE.badges[idx];
   save(); renderProgress(); renderSummary();
 });
 
 /* ======= Calendar controls ======= */
 $('#prevMonth').addEventListener('click', ()=>{
-  let {year,month} = STATE.calendar;
-  month--; if(month<0){month=11; year--;}
+  let {year,month} = STATE.calendar; month--; if(month<0){month=11; year--;}
   STATE.calendar={year,month}; save(); renderCalendar();
 });
 $('#nextMonth').addEventListener('click', ()=>{
-  let {year,month} = STATE.calendar;
-  month++; if(month>11){month=0; year++;}
+  let {year,month} = STATE.calendar; month++; if(month>11){month=0; year++;}
   STATE.calendar={year,month}; save(); renderCalendar();
 });
 $('#calHideRecurring').addEventListener('change', renderCalendar);
@@ -1115,9 +1122,21 @@ $$('.taskTab').forEach(b=> b.addEventListener('click', e=>{
   $$('.taskTab').forEach(x=>x.classList.toggle('active', x===e.target));
   renderTasks();
 }));
+
+/* Date tabs init */
+const dateTabs = $$('.dateTab');
+dateTabs.forEach(b=>{
+  if((b.dataset.range||'')==='all'){ b.classList.add('active'); }
+  b.addEventListener('click', e=>{
+    dateTabs.forEach(x=>x.classList.toggle('active', x===e.target));
+    CURRENT_DATE_RANGE = e.target.dataset.range || 'all';
+    renderTasks();
+  });
+});
+
 $('#hideRecurring').addEventListener('change', renderTasks);
 
-/* ======= Settings save/export/import/reset ======= */
+/* ======= Settings ======= */
 function renderSettings(){
   $('#setTrainerName').value = STATE.trainer.name || '';
   $('#unitsPerLevel').value = STATE.settings.unitsPerLevel;
@@ -1127,37 +1146,25 @@ function renderSettings(){
   $('#sexpVarBase').value = STATE.settings.sexpVarBase;
   $('#sexpVarStep').value = STATE.settings.sexpVarStep;
 }
-$('#unitsPerLevel').addEventListener('change', e=>{
-  STATE.settings.unitsPerLevel = Math.max(1, Number(e.target.value)||6); save();
-});
+$('#unitsPerLevel').addEventListener('change', e=>{ STATE.settings.unitsPerLevel = Math.max(1, Number(e.target.value)||6); save(); });
 $('#unitsLMH').addEventListener('change', e=>{
   const parts = e.target.value.split(',').map(x=>Number(x.trim())).filter(x=>!isNaN(x));
   if(parts.length>=3){ STATE.settings.unitsLMH = [parts[0],parts[1],parts[2]]; save(); }
 });
-$('#sexpThreshold').addEventListener('change', e=>{
-  STATE.settings.sexpThreshold = Math.max(10, Number(e.target.value)||100); save(); renderSummary();
-});
-$('#sexpDaily').addEventListener('change', e=>{
-  STATE.settings.sexpDaily = Math.max(0, Number(e.target.value)||0); save();
-});
-$('#sexpVarBase').addEventListener('change', e=>{
-  STATE.settings.sexpVarBase = Math.max(0, Number(e.target.value)||30); save();
-});
-$('#sexpVarStep').addEventListener('change', e=>{
-  STATE.settings.sexpVarStep = Math.max(0, Number(e.target.value)||20); save();
-});
+$('#sexpThreshold').addEventListener('change', e=>{ STATE.settings.sexpThreshold = Math.max(10, Number(e.target.value)||100); save(); renderSummary(); });
+$('#sexpDaily').addEventListener('change', e=>{ STATE.settings.sexpDaily = Math.max(0, Number(e.target.value)||0); save(); });
+$('#sexpVarBase').addEventListener('change', e=>{ STATE.settings.sexpVarBase = Math.max(0, Number(e.target.value)||30); save(); });
+$('#sexpVarStep').addEventListener('change', e=>{ STATE.settings.sexpVarStep = Math.max(0, Number(e.target.value)||20); save(); });
 
 $('#exportBtn').addEventListener('click', ()=>{
   const blob = new Blob([JSON.stringify(STATE)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='emerald-task-party.backup.json';
-  a.click(); URL.revokeObjectURL(url);
+  const a = document.createElement('a'); a.href=url; a.download='emerald-task-party.backup.json'; a.click(); URL.revokeObjectURL(url);
 });
 $('#importFile').addEventListener('change', async e=>{
   const file = e.target.files?.[0]; if(!file) return;
-  const text = await file.text();
   try{
-    const data = JSON.parse(text);
+    const data = JSON.parse(await file.text());
     STATE = deepMerge(defaultState(), data); save(); render(); alert('Imported ✔️');
   }catch(err){ alert('Invalid backup file.'); }
 });
@@ -1166,12 +1173,14 @@ $('#resetBtn').addEventListener('click', ()=>{
   STATE = defaultState(); save(); render();
 });
 
-/* ======= File helpers ======= */
-function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
-
-/* ======= Boot ======= */
+/* ======= Boot (Service Worker) ======= */
 if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  window.addEventListener('load', async ()=>{
+    try{
+      await navigator.serviceWorker.register('./sw.js', {scope:'./'});
+      if(navigator.storage && navigator.storage.persist) { try{ await navigator.storage.persist(); }catch{} }
+    }catch(e){ console.warn('SW register failed', e); }
+  });
 }
 render();
 </script>
