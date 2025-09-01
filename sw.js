@@ -1,32 +1,45 @@
-const CACHE = 'emerald-task-party-v1';
+// Minimal offline service worker (no webmanifest needed)
+const VERSION = 'etp-v3';
 const ASSETS = [
   './',
-  './index.html',
-  './manifest.webmanifest'
+  './index.html'
 ];
 
-self.addEventListener('install', e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(VERSION).then(cache => cache.addAll(ASSETS)).then(()=>self.skipWaiting())
+  );
 });
-self.addEventListener('activate', e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))) );
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k))))
+  );
   self.clients.claim();
 });
-self.addEventListener('fetch', e=>{
-  const req = e.request;
-  // Only cache GET
-  if(req.method!=='GET'){ return; }
-  e.respondWith(
-    caches.match(req).then(cached=>{
-      return cached || fetch(req).then(res=>{
-        // Cache same-origin navigations and static files
-        const url = new URL(req.url);
-        if(url.origin===location.origin){
-          const clone = res.clone();
-          caches.open(CACHE).then(c=>c.put(req, clone));
-        }
-        return res;
-      }).catch(()=> cached || caches.match('./index.html'));
-    })
-  );
+
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  if(req.method !== 'GET') return;
+
+  event.respondWith((async ()=>{
+    const cached = await caches.match(req);
+    if(cached) return cached;
+
+    try{
+      const res = await fetch(req);
+      // Cache same-origin requests
+      const url = new URL(req.url);
+      if(url.origin === self.location.origin){
+        const c = await caches.open(VERSION);
+        c.put(req, res.clone());
+      }
+      return res;
+    }catch(err){
+      // Offline SPA fallback
+      if(req.mode === 'navigate') return caches.match('./index.html');
+      if(cached) return cached;
+      throw err;
+    }
+  })());
 });
