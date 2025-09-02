@@ -1,0 +1,1348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Emerald Task Party</title>
+<meta name="theme-color" content="#1c9e57">
+
+<!-- Pixel Operator (Regular+Bold families, we use Bold globally) -->
+<link href="https://fonts.cdnfonts.com/css/pixel-operator" rel="stylesheet">
+
+<style>
+  :root{
+    --emerald:#1c9e57;
+    --emerald-dark:#127541;
+    --panel:#e6f7ee;
+    --panel-dark:#cfeee0;
+    --ink:#103622;
+    --ui:#f7fff9;
+    --xp:#9bd5ff;     /* light blue exp */
+    --sexp:#ffd64a;   /* yellow SEXP */
+    --danger:#c62828;
+    --shadow:0 3px 0 #0e5c34, 0 6px 12px rgba(0,0,0,.18);
+  }
+  
+  .input {
+  font-family: inherit;
+  font-size: 12px;
+  padding: 6px 8px;
+  width: 100%;
+  border: 2px solid var(--emerald-dark);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  box-sizing: border-box;
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--emerald);
+  box-shadow: 0 0 0 2px #9eecc7;
+}
+
+  *{box-sizing:border-box}
+  html,body{
+    height:100%; margin:0; overflow-x:hidden;
+    background:linear-gradient(180deg,#eafff2 0%,#d7ffe9 60%,#c8f9df 100%);
+    color:var(--ink);
+    font-family:'Pixel Operator Bold', monospace;
+    font-size:12px; line-height:1.3;
+    -webkit-font-smoothing:none; -moz-osx-font-smoothing:grayscale;
+    image-rendering:pixelated;
+  }
+
+  header{
+    position:sticky; top:0; z-index:4;
+    background:linear-gradient(180deg,#1c9e57 0%,#157a45 100%);
+    color:#fff; padding:calc(8px + env(safe-area-inset-top,0px)) 12px 10px;
+    display:flex; align-items:center; gap:12px; box-shadow:var(--shadow);
+  }
+  header h1{font-size:14px; margin:0}
+
+  nav{
+    display:flex; gap:8px; flex-wrap:wrap; padding:8px 10px;
+    background:#e2f6ec; border-bottom:2px solid var(--emerald-dark);
+  }
+  nav button{
+    appearance:none; border:2px solid var(--emerald-dark); background:var(--panel);
+    padding:6px 10px; border-radius:8px; font-weight:700; color:var(--ink);
+    box-shadow:0 2px 0 var(--emerald-dark); cursor:pointer;
+  }
+  nav button.active{ background:#fff; transform:translateY(1px)}
+
+  main{padding:12px; max-width:1100px; margin:0 auto calc(64px + env(safe-area-inset-bottom,0px))}
+  .screen{display:none} .screen.active{display:block}
+
+  .panel{ background:var(--panel); border:3px solid var(--emerald-dark); border-radius:10px; padding:12px; box-shadow:var(--shadow) }
+  .grid{display:grid; gap:10px}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr)}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr)}
+  @media (max-width:950px){ .grid.cols-3,.grid.cols-4{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:720px){ .grid.cols-2{grid-template-columns:1fr} }
+  @media (max-width:640px){ .grid.cols-3,.grid.cols-4{grid-template-columns:1fr} }
+
+  .trainer{display:flex; gap:12px; align-items:center}
+  /* replace the old .trainer img rule */
+.trainer img{
+  width:96px;
+  height:120px;
+  object-fit:contain;
+  border-radius:6px;
+  border:3px solid var(--emerald-dark);
+
+  background:
+    repeating-conic-gradient(#dfffe9 0 25%, #c8f9df 0 50%) 0 0/16px 16px;
+}
+  .small{font-size:10px; opacity:.9}
+
+  /* Team summary grid: 3 → 2 → 1 */
+  .team-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px}
+  @media (max-width:900px){ .team-grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:520px){ .team-grid{grid-template-columns:1fr} }
+
+  .mon {
+  background: var(--ui);
+  border: 3px solid var(--emerald-dark);
+  border-radius: 10px;
+  padding: 10px; /* more breathing room */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mon img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid var(--emerald-dark);
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.mon:hover {
+  box-shadow: 0 0 0 3px var(--emerald);
+  background: #ffffffcc;
+}
+
+  @media (max-width:520px){ .mon{ grid-template-columns:64px 1fr; } .mon img{ width:64px; height:64px; } }
+
+  .sexpbar{background:#fff4c3} .sexpbar>span{display:block; height:100%; background:var(--sexp); width:0%}
+
+  .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .grow{flex:1} .right{margin-left:auto}
+  .btn,.btn-danger,.btn-ghost{
+    appearance:none; border:2px solid var(--emerald-dark); background:#fff; color:var(--ink); padding:6px 10px; border-radius:8px; font-weight:700; cursor:pointer; box-shadow:0 2px 0 var(--emerald-dark);
+  }
+  .btn:hover{filter:brightness(0.98)}
+  .btn-danger{border-color:#721c24; background:#ffe2e2; color:#721c24}
+  .btn-ghost{background:#f1fff8}
+  .btn[disabled]{opacity:.5; pointer-events:none}
+
+  .list{display:grid; gap:8px}
+  .task{background:#fff; border:3px solid var(--emerald-dark); border-radius:8px; padding:10px}
+  .task .row{justify-content:space-between}
+  .task.done{opacity:.65}
+  .task.done .tTitle{text-decoration:line-through}
+
+  .note{background:#f9fffd; border-left:4px solid var(--emerald-dark); padding:8px; border-radius:6px}
+  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace; font-size:12px; padding:2px 6px; border-radius:6px; background:#eef5ff; border:1px solid #aac7ff}
+  .pill{background:#f1fff9; border:1px solid var(--emerald-dark); border-radius:999px; padding:4px 8px; font-size:12px}
+  .sep{height:2px; background:#cfeee0; margin:8px 0}
+
+  .lightbox{position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:50; padding:16px}
+  .lightbox.active{display:flex}
+  .card{max-width:720px; width:96%; max-height:90vh; overflow:auto; background:#fff; border:4px solid var(--emerald-dark); border-radius:10px; padding:14px; box-shadow:var(--shadow)}
+  .center{text-align:center}
+  .roll{animation:bob 1.3s ease-in-out infinite}
+  @keyframes bob{0%{transform:translateY(0)}50%{transform:translateY(-3px)}100%{transform:translateY(0)}}
+
+  .calendar{background:#fff; border:3px solid var(--emerald-dark); border-radius:10px; overflow:hidden}
+  .cal-head{display:flex; align-items:center; justify-content:space-between; background:var(--panel-dark); padding:8px 10px; border-bottom:3px solid var(--emerald-dark)}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr)}
+  .cal-grid .cell{border-right:1px solid #c9eddc; border-bottom:1px solid #c9eddc; min-height:90px; padding:6px; font-size:12px; position:relative}
+  .cal-grid .cell:nth-child(7n){border-right:none}
+  .cal-grid .cell .date{position:absolute; top:4px; right:6px; font-weight:700; opacity:.6}
+  .cal-grid .taskdot{width:6px; height:6px; border-radius:50%; display:inline-block; margin:1px}
+  .taskdot.completed{outline:2px solid #2e7d32; opacity:.55}
+  .cal-legend{display:flex; gap:10px; flex-wrap:wrap; margin:8px 0}
+
+  .category-color-Fitness{background:#86e1ff}
+  .category-color-Home{background:#ffbf86}
+  .category-color-Work{background:#ffd5e1}
+  .category-color-Skills{background:#a4ffa6}
+  .category-color-Finance{background:#faff86}
+  .category-color-Rose{background:#d6cfff}
+  .category-color-Other{background:#cccccc}
+
+  /* date tabs + completed collapsible */
+  .dateTab.active{ background:#fff; transform:translateY(1px) }
+  details.completed-block{border:2px dashed var(--emerald-dark); border-radius:8px; background:#f7fff9; padding:8px}
+  details.completed-block summary{cursor:pointer; font-weight:700; display:flex; align-items:center; gap:8px}
+  details.completed-block .list{ margin-top:8px }
+
+  /* golden bank placeholder */
+  .bank-card.gacha{ background:#fffbe6; border-color:#c8a600 }
+</style>
+</head>
+<body>
+<header>
+  <h1>Emerald Task Party</h1>
+  <span class="pill right">Offline-ready</span>
+</header>
+
+<nav id="tabs">
+  <button data-screen="summary" class="active">Summary</button>
+  <button data-screen="create">Create Task</button>
+  <button data-screen="tasks">All Tasks</button>
+  <button data-screen="team">Team</button>
+  <button data-screen="bank">Bank</button>
+  <button data-screen="gacha">Gacha</button>
+  <button data-screen="progress">Progress</button>
+  <button data-screen="calendar">Calendar</button>
+  <button data-screen="settings">Settings</button>
+</nav>
+
+<main>
+  <!-- SUMMARY -->
+  <section id="summary" class="screen active">
+    <div class="panel grid cols-2">
+      <div class="panel">
+        <div class="trainer">
+          <img id="trainerSprite" alt="Trainer">
+          <div>
+            <div class="row">
+              <strong id="trainerName">Trainer</strong>
+              <button class="btn-ghost right" id="editTrainerBtn">Edit</button>
+            </div>
+            <div class="small">SEXP:
+              <div class="sexpbar"><span id="sexpFill"></span></div>
+              <div class="row small">
+                <span>Current: <span id="sexpCurrent">0</span> / <span id="sexpMax">100</span></span>
+                <button class="btn right" id="claimDailySexpBtn">Claim Daily SEXP</button>
+              </div>
+            </div>
+            <div class="small" style="margin-top:6px">Variety Streak: <span id="varietyStreak">1</span> unique category(ies)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="row">
+          <div class="pill">Gym Badges: <span id="badgeCount">0</span>/8</div>
+          <div class="pill">Whiteouts: <span id="whiteouts">0</span></div>
+        </div>
+        <div class="sep"></div>
+        <div class="grid cols-2">
+          <button class="btn" data-screen-jump="progress">Update Badges</button>
+          <button class="btn" data-screen-jump="gacha">Open Gacha</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3 style="margin:0 0 8px">Your Team</h3>
+      <div class="team-grid" id="teamGrid"></div>
+    </div>
+  </section>
+
+  <!-- CREATE TASK -->
+  <section id="create" class="screen">
+    <div class="panel">
+      <h3>Create Task</h3>
+      <form id="taskForm" class="grid cols-2">
+        <div>
+          <label>Title</label>
+          <input class="input" name="title" required placeholder="e.g., Gym workout">
+        </div>
+        <div>
+          <label>Category</label>
+          <select name="category" class="input" required id="categorySelect">
+            <option>Fitness</option><option>Home</option><option>Work</option>
+            <option>Skills</option><option>Finance</option><option>Rose</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label>Priority</label>
+          <select name="priority" class="input">
+            <option>Low</option><option selected>Medium</option><option>High</option>
+          </select>
+        </div>
+        <div>
+          <label>Date (optional)</label>
+          <input type="date" class="input" name="date">
+        </div>
+        <div class="two" style="grid-column:1/-1">
+          <div>
+            <label>Recurring</label>
+            <select name="recurring" class="input" id="recurringType">
+              <option value="none" selected>None</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+          <div>
+            <label>Interval</label>
+            <input type="number" class="input" name="interval" min="1" value="1">
+          </div>
+        </div>
+        <div style="grid-column:1/-1">
+          <label>Notes</label>
+          <textarea class="input" name="note" rows="3" placeholder="Optional details..."></textarea>
+        </div>
+        <div style="grid-column:1/-1" class="row">
+          <button class="btn" type="submit">Add Task</button>
+          <span class="small">Tip: <span class="kbd">Ctrl/⌘ + Enter</span></span>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- TASKS -->
+  <section id="tasks" class="screen">
+    <div class="panel">
+
+      <div class="row">
+        <div class="row" role="tablist" aria-label="Task filter">
+          <button class="btn-ghost taskTab active" data-filter="All">All</button>
+          <button class="btn-ghost taskTab" data-filter="Fitness">Fitness</button>
+          <button class="btn-ghost taskTab" data-filter="Home">Home</button>
+          <button class="btn-ghost taskTab" data-filter="Work">Work</button>
+          <button class="btn-ghost taskTab" data-filter="Skills">Skills</button>
+          <button class="btn-ghost taskTab" data-filter="Finance">Finance</button>
+          <button class="btn-ghost taskTab" data-filter="Rose">Rose</button>
+          <button class="btn-ghost taskTab" data-filter="Other">Other</button>
+        </div>
+        <div class="right">
+          <label class="small"><input type="checkbox" id="hideRecurring"> Hide recurring</label>
+        </div>
+      </div>
+
+      <!-- Date filter -->
+      <div class="row" style="margin-top:6px">
+        <div class="row" role="tablist" aria-label="Date range">
+          <button class="btn-ghost dateTab" data-range="all">All Dates</button>
+          <button class="btn-ghost dateTab" data-range="today">Today</button>
+          <button class="btn-ghost dateTab" data-range="week">This Week</button>
+          <button class="btn-ghost dateTab" data-range="month">This Month</button>
+          <button class="btn-ghost dateTab" data-range="undated">Undated</button>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+      <div id="taskList" class="list"></div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section id="team" class="screen">
+    <div class="panel">
+      <h3>Team (Slot-based levels)</h3>
+      <p class="small">Slots: Fitness, Home, Work, Skills, Finance, <b>Rose</b>. Swapping Pokémon won’t change slot levels.</p>
+      <div id="teamEdit" class="grid cols-2"></div>
+    </div>
+  </section>
+
+  <!-- BANK -->
+  <section id="bank" class="screen">
+    <div class="panel">
+      <div class="row">
+        <h3 style="margin:0">Bank</h3>
+        <button class="btn right" id="addBankPokemonBtn">Add Pokémon</button>
+      </div>
+      <div id="bankList" class="grid cols-3" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <!-- GACHA -->
+  <section id="gacha" class="screen">
+    <div class="panel">
+      <h3>Gacha</h3>
+      <div class="row">
+        <div class="grow">
+          <div class="sexpbar"><span id="sexpFill2"></span></div>
+          <div class="small">SEXP: <span id="sexpCurrent2">0</span> / <span id="sexpMax2">100</span></div>
+        </div>
+        <button class="btn roll" id="rollBtn">ROLL!</button>
+      </div>
+      <p class="small note">Rolling spends SEXP and adds a golden <b>GACHA ROLL</b> placeholder to Bank. Edit it after your in-game encounter, then move it to a Team slot.</p>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section id="progress" class="screen">
+    <div class="panel">
+      <h3>Progress</h3>
+      <div class="row">
+        <div><b>Whiteouts</b>: <span id="whiteoutsVal">0</span></div>
+        <button class="btn right" id="incWhiteout">+1 Whiteout</button>
+      </div>
+      <div class="sep"></div>
+      <div class="grid cols-4" id="badges"></div>
+    </div>
+  </section>
+
+  <!-- CALENDAR -->
+  <section id="calendar" class="screen">
+    <div class="panel">
+      <div class="row">
+        <h3 style="margin:0">Calendar</h3>
+        <label class="small right"><input type="checkbox" id="calHideRecurring"> Hide recurring</label>
+      </div>
+      <div class="calendar">
+        <div class="cal-head">
+          <button class="btn-ghost" id="prevMonth">&lt; Prev</button>
+          <div><b id="calTitle"></b></div>
+          <button class="btn-ghost" id="nextMonth">Next &gt;</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div class="cal-legend small">
+        <span><span class="taskdot category-color-Fitness"></span>Fitness</span>
+        <span><span class="taskdot category-color-Home"></span>Home</span>
+        <span><span class="taskdot category-color-Work"></span>Work</span>
+        <span><span class="taskdot category-color-Skills"></span>Skills</span>
+        <span><span class="taskdot category-color-Finance"></span>Finance</span>
+        <span><span class="taskdot category-color-Rose"></span>Rose</span>
+        <span><span class="taskdot category-color-Other"></span>Other</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="settings" class="screen">
+    <div class="panel">
+      <h3>Settings</h3>
+      <div class="grid cols-2">
+        <div class="panel">
+          <h4 style="margin-top:0">Trainer</h4>
+          <label>Name</label>
+          <input id="setTrainerName" class="input" placeholder="Trainer name">
+          <div class="sep"></div>
+          <label>Trainer Sprite</label>
+          <input type="file" id="setTrainerSprite" class="input" accept="image/*">
+        </div>
+
+        <div class="panel">
+          <h4 style="margin-top:0">Task → Level progress</h4>
+          <div class="two">
+            <div>
+              <label>Units per level</label>
+              <input type="number" id="unitsPerLevel" class="input" min="1" value="6">
+              <div class="small">How many “units” fill a slot level.</div>
+            </div>
+            <div>
+              <label>Low/Med/High units</label>
+              <input id="unitsLMH" class="input" value="1,2,3">
+              <div class="small">Comma-separated (e.g., 1,2,3)</div>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <h4 style="margin:8px 0 6px">SEXP</h4>
+          <div class="two">
+            <div>
+              <label>Threshold to ROLL</label>
+              <input type="number" id="sexpThreshold" class="input" min="10" value="100">
+            </div>
+            <div>
+              <label>Daily SEXP</label>
+              <input type="number" id="sexpDaily" class="input" min="0" value="10">
+            </div>
+          </div>
+          <div class="two">
+            <div>
+              <label>Variety base (2 cats)</label>
+              <input type="number" id="sexpVarBase" class="input" min="0" value="30">
+            </div>
+            <div>
+              <label>Variety step (+ each)</label>
+              <input type="number" id="sexpVarStep" class="input" min="0" value="20">
+            </div>
+          </div>
+          <div class="two">
+            <div>
+              <label>“Other” SEXP per unit</label>
+              <input type="number" id="sexpOtherMult" class="input" min="0" value="10">
+              <div class="small">Low/Med/High give 1/2/3 units × this value.</div>
+            </div>
+            <div></div>
+          </div>
+        </div>
+
+        <div class="panel" style="grid-column:1/-1">
+          <h4 style="margin-top:0">Data</h4>
+          <button class="btn" id="exportBtn">Export Backup</button>
+          <input type="file" id="importFile" class="input" accept="application/json">
+          <button class="btn-danger" id="resetBtn">Factory Reset</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Lightboxes -->
+<div class="lightbox" id="taskLightbox">
+  <div class="card">
+    <h3 id="lbTitle">Task</h3>
+    <div id="lbBody"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="lbComplete">Complete</button>
+      <button class="btn-danger" id="lbDelete">Delete</button>
+      <button class="btn-ghost right" id="lbClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="pokemonLightbox">
+  <div class="card">
+    <h3 id="plbTitle">Pokémon</h3>
+    <div id="plbBody"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="plbSave">Save</button>
+      <button class="btn-ghost right" id="plbClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== Constants ===== */
+const SLOT_CATEGORIES = ['Fitness','Home','Work','Skills','Finance','Rose'];
+const TASK_CATEGORIES = [...SLOT_CATEGORIES, 'Other'];
+
+const HOENN_BADGES = [
+  { name: 'Stone',   color: '#c0c0c0' },
+  { name: 'Knuckle', color: '#c59b7a' },
+  { name: 'Dynamo',  color: '#ffeb3b' },
+  { name: 'Heat',    color: '#ff8a65' },
+  { name: 'Balance', color: '#80cbc4' },
+  { name: 'Feather', color: '#e0e0e0' },
+  { name: 'Mind',    color: '#ce93d8' },
+  { name: 'Rain',    color: '#90caf9' }
+];
+
+/* ===== State ===== */
+const defaultState = () => ({
+  trainer:{ name:"Trainer", sprite:null },
+  settings:{
+    unitsPerLevel:6, unitsLMH:[1,2,3],
+    sexpThreshold:100, sexpDaily:10,
+    sexpVarBase:30, sexpVarStep:20,
+    sexpOtherMult:10
+  },
+  sexp:0, lastDailySexp:null,
+  variety:{ set:[], streak:1, lastCat:null },
+
+  slots: Object.fromEntries(SLOT_CATEGORIES.map(c=>[c,{level:1,progress:0}])),
+  team:  Object.fromEntries(SLOT_CATEGORIES.map(c=>[c,null])),
+
+  bank:[], // {id,species,nickname,image,isGacha?,levelSeen?}
+  tasks:[], // {id,title,category,priority,date?,note,recurring:{type,interval}, completed:false, completions?}
+  badges:[false,false,false,false,false,false,false,false],
+  whiteouts:0,
+  calendar:{ month:(new Date()).getMonth(), year:(new Date()).getFullYear() }
+});
+
+let STATE = load();
+function load(){
+  try{
+    const raw = localStorage.getItem('emeraldTaskPartyV4');
+    return raw? deepMerge(defaultState(), JSON.parse(raw)) : defaultState();
+  }catch(e){ console.error(e); return defaultState(); }
+}
+function save(){ try{ localStorage.setItem('emeraldTaskPartyV4', JSON.stringify(STATE)); }catch(e){ console.warn('Save failed', e); } }
+
+/* ===== Utils ===== */
+const $ = (q,p=document)=>p.querySelector(q);
+const $$ = (q,p=document)=>Array.from(p.querySelectorAll(q));
+const fmtDate = d => new Date(d).toISOString().slice(0,10);
+const todayISO = ()=> fmtDate(new Date());
+function uuid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+function deepMerge(a,b){
+  if(Array.isArray(a)){ return Array.isArray(b)? b : a; }
+  if(typeof a==='object' && a){
+    const out = {...a};
+    for(const k in b){ out[k] = (k in a)? deepMerge(a[k], b[k]) : b[k]; }
+    return out;
+  }
+  return (b===undefined)? a : b;
+}
+
+async function resizeImageFile(file, maxW=320, maxH=400, mime='image/png', quality=0.85){
+  const bitmap = await createImageBitmap(file);
+  const ratio = Math.min(maxW/bitmap.width, maxH/bitmap.height, 1); // only downscale
+  const w = Math.round(bitmap.width * ratio);
+  const h = Math.round(bitmap.height * ratio);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(bitmap, 0, 0, w, h);
+
+  // If you want transparency preserved for PNG art, switch mime to 'image/png'
+  return canvas.toDataURL(mime, quality);
+}
+
+function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+function defaultOccurrenceISO(t){ return t.date || todayISO(); }
+function isTaskCompleted(t, isoOverride=null){
+  if(t.recurring?.type !== 'none'){
+    const iso = isoOverride || defaultOccurrenceISO(t);
+    return !!(t.completions && t.completions[iso]);
+  }
+  return !!t.completed;
+}
+function startOfToday(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
+function endOfToday(){ const d=new Date(); d.setHours(23,59,59,999); return d; }
+function startOfWeek(){ const d=startOfToday(); const day=(d.getDay()+6)%7; d.setDate(d.getDate()-day); return d; }
+function endOfWeek(){ const d=startOfWeek(); d.setDate(d.getDate()+6); d.setHours(23,59,59,999); return d; }
+function startOfMonth(){ const n=new Date(); return new Date(n.getFullYear(), n.getMonth(), 1); }
+function endOfMonth(){ const n=new Date(); return new Date(n.getFullYear(), n.getMonth()+1, 0, 23,59,59,999); }
+function isWithin(dateISO, range){
+  if(!dateISO){ return range==='undated' ? true : (range==='all'); }
+  const d = new Date(dateISO);
+  if(range==='all') return true;
+  if(range==='today') return d>=startOfToday() && d<=endOfToday();
+  if(range==='week') return d>=startOfWeek() && d<=endOfWeek();
+  if(range==='month') return d>=startOfMonth() && d<=endOfMonth();
+  if(range==='undated') return false;
+  return true;
+}
+
+/* ===== Experience & SEXP ===== */
+function unitsPerLevel(){ return Math.max(1, Number(STATE.settings.unitsPerLevel)||6); }
+function unitsForPriority(priority){
+  const arr=STATE.settings.unitsLMH||[1,2,3];
+  const safe=[Number(arr[0])||1, Number(arr[1])||2, Number(arr[2])||3];
+  return (priority==="Low")? safe[0] : (priority==="High")? safe[2] : safe[1];
+}
+function awardProgress(category, priority){
+  if(category === 'Other'){
+    // SEXP-only category
+    const mult = Math.max(0, Number(STATE.settings.sexpOtherMult)||10);
+    const gain = unitsForPriority(priority) * mult;
+    STATE.sexp = Math.floor(STATE.sexp + gain);
+    return;
+  }
+  const slot = STATE.slots[category]; if(!slot) return;
+  const add = unitsForPriority(priority) / unitsPerLevel();
+  slot.progress = (slot.progress||0) + add;
+  let leveledUp = false;
+  while(slot.progress >= 1 && slot.level < 100){
+    slot.progress -= 1;
+    slot.level += 1;
+    leveledUp = true;
+  }
+  if(leveledUp) launchConfetti();
+}
+function awardSEXP(category){
+  const v = STATE.variety;
+  if(v.set.includes(category) || v.lastCat===category){
+    v.set = [category]; v.streak = 1;
+  }else{
+    v.set.push(category); v.streak = v.set.length;
+  }
+  v.lastCat = category;
+  const base = Number(STATE.settings.sexpVarBase)||30;
+  const step = Number(STATE.settings.sexpVarStep)||20;
+  let gain = 0; if(v.streak>=2) gain = base + (v.streak-2)*step;
+  STATE.sexp = Math.max(0, Math.floor(STATE.sexp + gain));
+}
+
+/* ===== Confetti ===== */
+function launchConfetti(){
+  const canvas = document.createElement('canvas');
+  canvas.style.position = 'fixed'; canvas.style.top='0'; canvas.style.left='0';
+  canvas.style.width='100%'; canvas.style.height='100%';
+  canvas.style.pointerEvents='none'; canvas.style.zIndex='9999';
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  const W = window.innerWidth, H = window.innerHeight;
+  canvas.width = W; canvas.height = H;
+  const colors = ['#ff0000','#3b4cca','#ffde00','#ff9900','#78c850','#f85888'];
+  const P = Array.from({length:100}, ()=>({
+    x: Math.random()*W, y: Math.random()*H/3, r: Math.random()*6+2,
+    color: colors[Math.floor(Math.random()*colors.length)], d: Math.random()*W
+  }));
+  let f=0;
+  (function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(const p of P){
+      ctx.beginPath(); ctx.strokeStyle=p.color; ctx.lineWidth=p.r;
+      ctx.moveTo(p.x+p.r, p.y); ctx.lineTo(p.x, p.y+p.r); ctx.stroke();
+      p.y += Math.cos(f/10 + p.d) + 1 + p.r/3;
+      p.x += Math.sin(f/20);
+      if(p.y>H){ p.y=-10; p.x=Math.random()*W; }
+    }
+    f++; if(f<140) requestAnimationFrame(draw); else document.body.removeChild(canvas);
+  })();
+}
+
+/* ===== Rendering ===== */
+const SCREENS = $$('#tabs button').map(b=>b.dataset.screen);
+$('#tabs').addEventListener('click', e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  const scr = e.target.dataset.screen;
+  $$('#tabs button').forEach(x=>x.classList.toggle('active', x===e.target));
+  SCREENS.forEach(id=> $('#'+id).classList.toggle('active', id===scr));
+  window.scrollTo(0,0);
+  render();
+});
+$$('[data-screen-jump]').forEach(btn=> btn.addEventListener('click', ()=> $(`#tabs button[data-screen="${btn.dataset.screenJump}"]`).click() ));
+
+function render(){
+  renderSummary(); renderTeamGrid(); renderTasks(); renderTeamEdit(); renderBank();
+  renderGacha(); renderProgress(); renderCalendar(); renderSettings();
+}
+function renderSummary(){
+  $('#trainerName').textContent = STATE.trainer.name || "Trainer";
+  if(STATE.trainer.sprite){ $('#trainerSprite').src = STATE.trainer.sprite; }
+  else $('#trainerSprite').src = 'data:image/svg+xml;utf8,'+encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect width="100%" height="100%" fill="#ffffff"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#1c9e57" font-size="10" font-family="monospace">Trainer</text></svg>`
+  );
+  const t = STATE.sexp, max = STATE.settings.sexpThreshold;
+  $('#sexpCurrent').textContent = t; $('#sexpMax').textContent = max;
+  $('#sexpCurrent2').textContent = t; $('#sexpMax2').textContent = max;
+  $('#sexpFill').style.width = Math.min(100, t/max*100) + '%';
+  $('#sexpFill2').style.width = Math.min(100, t/max*100) + '%';
+  $('#varietyStreak').textContent = STATE.variety.streak || 1;
+  $('#badgeCount').textContent = STATE.badges.filter(Boolean).length;
+  $('#whiteouts').textContent = STATE.whiteouts;
+}
+function placeholderMon(cat){
+  const col = {
+    Fitness:'#86e1ff', Home:'#ffbf86', Work:'#ffd5e1', Skills:'#a4ffa6',
+    Finance:'#faff86', Rose:'#d6cfff', Other:'#cccccc'
+  }[cat]||'#e6f7ee';
+  return 'data:image/svg+xml;utf8,'+encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="100%" height="100%" fill="${col}"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#0a4e2b" font-family="monospace" font-size="10">${cat}</text></svg>`
+  );
+}
+function renderTeamGrid(){
+  const grid = $('#teamGrid'); grid.innerHTML='';
+  for(const cat of SLOT_CATEGORIES){
+    const mon = STATE.team[cat];
+    const slot = STATE.slots[cat];
+    const div = document.createElement('div'); div.className='mon';
+    if(mon){
+      div.innerHTML = mon ? `
+  <img src="${mon.image || placeholderMon(cat)}" alt="${mon.nickname || mon.species}">
+  <div class="grow">
+    <div class="row" style="justify-content: space-between;">
+      <strong>${mon.nickname || mon.species}</strong>
+      <span class="pill">Lv. ${slot.level}</span>
+    </div>
+    <div class="small" style="margin-top:4px;">
+      Slot: <span class="pill">${cat}</span><br>
+      <span>Slot level persists across swaps</span>
+    </div>
+  </div>
+` : `
+  <img src="${placeholderMon(cat)}" alt="Empty slot">
+  <div class="grow">
+    <div class="row" style="justify-content: space-between;">
+      <strong>Empty</strong>
+      <span class="pill">${cat}</span>
+    </div>
+    <div class="small" style="margin-top:4px;">
+      Move a Pokémon here from Bank.
+    </div>
+  </div>
+`;
+    }
+    grid.appendChild(div);
+  }
+}
+
+/* Date filter state */
+let CURRENT_DATE_RANGE = 'all';
+
+function renderTasks(){
+  const activeTab = $('.taskTab.active')?.dataset.filter || 'All';
+  const hideRec = $('#hideRecurring').checked;
+  const range = CURRENT_DATE_RANGE || 'all';
+
+  const listWrap = $('#taskList');
+  listWrap.innerHTML='';
+
+  // Filter by category + recurring toggle + date range
+  let tasks = STATE.tasks.filter(t => (activeTab==='All'||t.category===activeTab));
+  if(hideRec) tasks = tasks.filter(t=>t.recurring?.type==='none');
+
+  tasks = tasks.filter(t=>{
+    if(range==='undated') return !t.date;
+    if(range==='all') return true;
+    return isWithin(t.date, range);
+  });
+
+  // Sort by date then title
+  tasks.sort((a,b)=>{
+    const da = a.date||'', db=b.date||'';
+    if(da===db) return a.title.localeCompare(b.title);
+    if(!da) return 1; if(!db) return -1;
+    return da<db? -1: 1;
+  });
+
+  if(!tasks.length){
+    listWrap.innerHTML = `<div class="small">No tasks here—try another filter. ✔️</div>`;
+    return;
+  }
+
+  // Split into incomplete vs completed (default occurrence reference)
+  const incompletes = [];
+  const completes = [];
+  for(const t of tasks){
+    const occISO = defaultOccurrenceISO(t);
+    (isTaskCompleted(t, occISO) ? completes : incompletes).push({task:t, occISO});
+  }
+
+  // Incomplete tasks
+  for(const {task:t} of incompletes){
+    const due = t.date? ` · due ${t.date}`:'';
+    const rec = (t.recurring?.type!=='none')? ` · ${t.recurring.type} x${t.recurring.interval||1}`:'';
+    const card = document.createElement('div');
+    card.className='task';
+    card.innerHTML = `
+      <div class="row">
+        <div><b class="tTitle">${t.title}</b> <span class="pill">${t.category}</span> <span class="pill">Pri: ${t.priority}</span> <span class="small">${due}${rec}</span></div>
+        <div>
+          <button class="btn" data-act="complete" data-id="${t.id}">Complete</button>
+          <button class="btn-danger" data-act="delete" data-id="${t.id}">Delete</button>
+          <button class="btn-ghost" data-act="view" data-id="${t.id}">Info</button>
+        </div>
+      </div>
+      ${t.note? `<div class="note small">${t.note}</div>`:''}
+    `;
+    listWrap.appendChild(card);
+  }
+
+  // Collapsible completed section
+  if(completes.length){
+    const det = document.createElement('details');
+    det.className='completed-block'; det.open = false;
+    const sum = document.createElement('summary');
+    sum.innerHTML = `Completed (${completes.length})`;
+    det.appendChild(sum);
+
+    const completedList = document.createElement('div');
+    completedList.className='list';
+
+    for(const {task:t} of completes){
+      const due = t.date? ` · due ${t.date}`:'';
+      const rec = (t.recurring?.type!=='none')? ` · ${t.recurring.type} x${t.recurring.interval||1}`:'';
+      const card = document.createElement('div');
+      card.className='task done';
+      card.innerHTML = `
+        <div class="row">
+          <div><b class="tTitle">${t.title}</b> <span class="pill">${t.category}</span> <span class="pill">Pri: ${t.priority}</span> <span class="small">${due}${rec}</span></div>
+          <div>
+            <button class="btn" data-act="complete" data-id="${t.id}" disabled>Complete</button>
+            <button class="btn-danger" data-act="delete" data-id="${t.id}">Delete</button>
+            <button class="btn-ghost" data-act="view" data-id="${t.id}">Info</button>
+          </div>
+        </div>
+        ${t.note? `<div class="note small">${t.note}</div>`:''}
+      `;
+      completedList.appendChild(card);
+    }
+
+    det.appendChild(completedList);
+    listWrap.appendChild(det);
+  }
+}
+
+function renderTeamEdit(){
+  const wrap = $('#teamEdit'); wrap.innerHTML='';
+  for(const cat of SLOT_CATEGORIES){
+    const mon = STATE.team[cat];
+    const slot = STATE.slots[cat];
+    const card = document.createElement('div'); card.className='panel';
+    if(mon){
+      card.innerHTML = `
+  <div class="row" style="justify-content: space-between;">
+    <strong>${mon.nickname || mon.species}</strong>
+    <span class="pill">${cat}</span>
+  </div>
+  <div class="row" style="margin:8px 0; gap:12px;">
+    <img src="${mon.image || placeholderMon(cat)}"
+         style="width:80px;height:80px;border-radius:8px;
+                border:2px solid var(--emerald-dark);background:#fff">
+    <div class="grow" style="display: grid; gap:8px;">
+      <div>
+        <label class="small">Nickname</label>
+        <input class="input" data-edit="nick" data-cat="${cat}" value="${mon.nickname || ''}">
+      </div>
+      <div>
+        <label class="small">Species</label>
+        <input class="input" data-edit="species" data-cat="${cat}" value="${mon.species || ''}">
+      </div>
+      <div class="two">
+        <div>
+          <label class="small">Slot Level</label>
+          <input type="number" min="1" max="100" class="input"
+                 data-edit="slotlevel" data-cat="${cat}" value="${slot.level}">
+        </div>
+        <div>
+          <label class="small">Portrait</label>
+          <input type="file" accept="image/*" class="input"
+                 data-edit="image" data-cat="${cat}">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <button class="btn" data-act="bankMon" data-cat="${cat}">BANK</button>
+    <button class="btn-ghost right" data-act="saveMon" data-cat="${cat}">Save</button>
+  </div>
+`;
+
+    }else{
+      card.innerHTML = `
+        <div>Empty <span class="pill">${cat}</span></div>
+        <div class="small" style="margin:6px 0">Move a Pokémon here from Bank.</div>
+        <div class="two" style="margin-top:6px">
+          <div><label>Slot Level</label><input type="number" min="1" max="100" class="input" data-edit="slotlevel" data-cat="${cat}" value="${slot.level}"></div>
+          <div></div>
+        </div>
+      `;
+    }
+    wrap.appendChild(card);
+  }
+}
+
+function renderBank(){
+  const list = $('#bankList'); list.innerHTML='';
+  if(!STATE.bank.length){ list.innerHTML = `<div class="small">Bank is empty.</div>`; return; }
+  for(const m of STATE.bank){
+    const el = document.createElement('div');
+    el.className='panel bank-card'+(m.isGacha?' gacha':'');
+    el.innerHTML = `
+      <div class="row">
+        <div>${m.nickname||m.species}</div>
+        <div class="right">${m.levelSeen? `Lv. ${m.levelSeen}` : ''}</div>
+      </div>
+      <img src="${m.image||placeholderMon('Other')}" style="width:100%;height:160px;object-fit:cover;border:2px solid var(--emerald-dark);border-radius:8px;background:#fff">
+      <div class="two" style="margin-top:6px">
+        <div>
+          <label>To Team slot (category)</label>
+          <select class="input" data-bank-move="${m.id}">
+            ${SLOT_CATEGORIES.map(c=>`<option>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn" data-act="moveToTeam" data-id="${m.id}">Move To Team</button>
+        </div>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <button class="btn-ghost" data-act="editBank" data-id="${m.id}">Edit</button>
+        <button class="btn-danger right" data-act="deleteBank" data-id="${m.id}">Release</button>
+      </div>
+    `;
+    list.appendChild(el);
+  }
+}
+function renderGacha(){ /* bars updated in summary */ }
+
+function renderProgress(){
+  $('#whiteoutsVal').textContent = STATE.whiteouts;
+  const badgeWrap = $('#badges'); badgeWrap.innerHTML='';
+  for(let i=0;i<8;i++){
+    const on = !!STATE.badges[i];
+    const meta = HOENN_BADGES[i];
+    const b = document.createElement('button');
+    b.className='btn'; b.dataset.badge=i; b.style.margin='4px 0';
+    if(on){ b.style.background=meta.color; b.style.color='#0a4e2b'; b.innerHTML=`${meta.name} ✓`; }
+    else{ b.style.background='#fff'; b.style.opacity=.7; b.innerHTML=`${meta.name} ×`; }
+    badgeWrap.appendChild(b);
+  }
+  $('#badgeCount').textContent = STATE.badges.filter(Boolean).length;
+}
+
+function firstOfMonth(y,m){ return new Date(y,m,1); }
+function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
+function occurrencesOnDate(iso){
+  const list = STATE.tasks.filter(t=>{
+    if(t.recurring?.type==='none'){ return (t.date? t.date===iso : false); }
+    const start = t.date? new Date(t.date) : null;
+    const target = new Date(iso);
+    const interval = Math.max(1, t.recurring.interval||1);
+    if(t.recurring.type==='daily'){ if(!start) return true; const diff=Math.floor((target-start)/86400000); return diff>=0 && diff%interval===0; }
+    if(t.recurring.type==='weekly'){ if(!start) return true; const diff=Math.floor((target-start)/86400000); return diff>=0 && Math.floor(diff/7)%interval===0 && start.getDay()===target.getDay(); }
+    if(t.recurring.type==='monthly'){ if(!start) return true; const months=(target.getFullYear()-start.getFullYear())*12+(target.getMonth()-start.getMonth()); return months>=0 && months%interval===0 && target.getDate()===start.getDate(); }
+    return false;
+  });
+  // hide already-completed occurrences
+  return list.filter(t=> !(t.recurring?.type!=='none' && t.completions?.[iso]));
+}
+function renderCalendar(){
+  const {year, month} = STATE.calendar;
+  $('#calTitle').textContent = new Date(year, month, 1).toLocaleString(undefined,{month:'long', year:'numeric'});
+  const grid = $('#calGrid'); grid.innerHTML='';
+  const start = firstOfMonth(year, month);
+  const dow = (start.getDay()+6)%7; // Monday-first
+  const dim = daysInMonth(year, month);
+  const hideRec = $('#calHideRecurring').checked;
+
+  for(let i=0;i<dow;i++){ const c=document.createElement('div'); c.className='cell'; grid.appendChild(c); }
+  for(let day=1; day<=dim; day++){
+    const d = new Date(year, month, day); const iso = fmtDate(d);
+    const cell = document.createElement('div'); cell.className='cell';
+    cell.innerHTML = `<div class="date">${day}</div><div class="dots"></div>`;
+    const dots = cell.querySelector('.dots');
+    const tasks = occurrencesOnDate(iso).filter(t=> !hideRec || t.recurring?.type==='none');
+
+    for(const t of tasks){
+      const done = isTaskCompleted(t, iso);
+      const dot = document.createElement('span');
+      dot.className = 'taskdot category-color-'+t.category + (done? ' completed':'');
+      dot.title = `${t.title} [${t.category}]` + (done? ' ✔️':'');
+      dots.appendChild(dot);
+    }
+
+    cell.addEventListener('click', ()=>{
+      const list = tasks.map(t=>{
+        const done = isTaskCompleted(t, iso);
+        const title = done ? `<span style="text-decoration:line-through;opacity:.7">${t.title}</span>` : t.title;
+        return `<li>${title} <span class="pill">${t.category}</span>
+                  <button class="btn" data-quick-complete="${t.id}" data-date="${iso}" ${done?'disabled':''}>Complete</button>
+                </li>`;
+      }).join('');
+      showTaskLightbox({
+        title:`Tasks on ${iso}`,
+        html: list? `<ul>${list}</ul>`:'<div class="small">No tasks.</div>',
+        allowComplete:false, taskId:null
+      });
+      $('#taskLightbox').querySelectorAll('[data-quick-complete]').forEach(btn=>{
+        btn.addEventListener('click',()=> completeTask(btn.getAttribute('data-quick-complete'), btn.getAttribute('data-date')));
+      });
+    });
+
+    grid.appendChild(cell);
+  }
+}
+
+/* ===== Events ===== */
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey||e.metaKey) && e.key==='Enter'){
+    const f = $('#taskForm'); if(f && $('#create').classList.contains('active')) f.requestSubmit();
+  }
+});
+$('#taskForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const t = {
+    id: uuid(),
+    title: (fd.get('title')||'').toString().trim(),
+    category: fd.get('category'),
+    priority: fd.get('priority'),
+    date: fd.get('date')||null,
+    note: (fd.get('note')||'').toString(),
+    recurring:{ type: fd.get('recurring')||'none', interval: Math.max(1, Number(fd.get('interval')||1)) },
+    completed:false
+  };
+  STATE.tasks.push(t); save(); e.target.reset(); renderTasks(); alert('Task added ✔️');
+});
+$('#taskList').addEventListener('click', e=>{
+  const act = e.target.getAttribute('data-act'); if(!act) return;
+  const id = e.target.getAttribute('data-id');
+  if(act==='delete'){ deleteTask(id); }
+  else if(act==='complete'){ completeTask(id); }
+  else if(act==='view'){ openTask(id); }
+});
+function openTask(id){
+  const t = STATE.tasks.find(x=>x.id===id); if(!t) return;
+  const done = isTaskCompleted(t);
+  showTaskLightbox({
+    title:t.title,
+    html: `
+      <div class="row"><span class="pill">${t.category}</span><span class="pill">Priority: ${t.priority}</span>${t.date? `<span class="pill">Due ${t.date}</span>`:''}</div>
+      ${t.note? `<div class="note" style="margin-top:8px">${t.note}</div>`:''}
+      <div class="small" style="margin-top:8px">Recurring: ${t.recurring?.type||'none'} x${t.recurring?.interval||1}</div>
+      ${done? `<div class="small" style="margin-top:6px;color:#2e7d32">✔️ Completed</div>`:''}
+    `,
+    allowComplete: !done, taskId: id
+  });
+}
+function deleteTask(id){
+  const i = STATE.tasks.findIndex(x=>x.id===id); if(i<0) return;
+  if(!confirm('Delete this task?')) return;
+  STATE.tasks.splice(i,1); save(); render();
+}
+function completeTask(id, dateOverride=null){
+  const t = STATE.tasks.find(x=>x.id===id); if(!t) return;
+  const whenISO = dateOverride || defaultOccurrenceISO(t);
+
+  if(t.recurring?.type !== 'none'){
+    t.completions = t.completions||{};
+    if(t.completions[whenISO]){ alert('This occurrence is already completed.'); return; }
+    t.completions[whenISO] = true;
+  }else{
+    if(t.completed){ alert('Task already completed.'); return; }
+    t.completed = true;
+  }
+
+  awardProgress(t.category, t.priority);
+  awardSEXP(t.category);
+
+  save(); render(); alert('Task completed! Progress gained ✨');
+}
+
+/* Lightboxes */
+function showTaskLightbox({title, html, allowComplete, taskId}){
+  $('#lbTitle').textContent = title;
+  $('#lbBody').innerHTML = html;
+  $('#lbComplete').style.display = allowComplete? '' : 'none';
+  $('#lbComplete').onclick = ()=>{ completeTask(taskId); closeTaskLb(); };
+  $('#lbDelete').onclick = ()=>{ deleteTask(taskId); closeTaskLb(); };
+  $('#lbClose').onclick = closeTaskLb;
+  $('#taskLightbox').classList.add('active');
+}
+function closeTaskLb(){ $('#taskLightbox').classList.remove('active'); }
+
+function showPokemonEditor(mon, onSave){
+  $('#plbTitle').textContent = mon.id? 'Edit Pokémon' : 'Add Pokémon';
+  $('#plbBody').innerHTML = `
+    <div class="two">
+      <div><label>Species</label><input class="input" id="pmSpecies" value="${mon.species||''}"></div>
+      <div><label>Nickname</label><input class="input" id="pmNick" value="${mon.nickname||''}"></div>
+    </div>
+    <div style="margin-top:6px">
+      <label>Portrait</label>
+      <input type="file" accept="image/*" id="pmImg">
+    </div>
+  `;
+  $('#plbSave').onclick = async ()=>{
+    const upd = {...mon, species: $('#pmSpecies').value.trim()||'Unknown', nickname: $('#pmNick').value.trim()};
+    const file = $('#pmImg').files?.[0]; if(file){ upd.image = await fileToDataURL(file); }
+    onSave(upd); $('#pokemonLightbox').classList.remove('active'); save(); render();
+  };
+  $('#plbClose').onclick = ()=> $('#pokemonLightbox').classList.remove('active');
+  $('#pokemonLightbox').classList.add('active');
+}
+
+/* Team/Bank actions */
+$('#teamEdit').addEventListener('click', async e=>{
+  const act = e.target.getAttribute('data-act'); if(!act) return;
+  const cat = e.target.getAttribute('data-cat');
+  const mon = STATE.team[cat];
+  if(act==='bankMon'){
+    if(!mon) return;
+    if(!confirm('Move this Pokémon to Bank (slot remains same level)?')) return;
+    mon.levelSeen = STATE.slots[cat].level;
+    STATE.bank.push(mon); STATE.team[cat]=null; save(); render();
+  }else if(act==='saveMon'){
+    const slot = STATE.slots[cat];
+    if(mon){
+      mon.nickname = $(`input[data-edit="nick"][data-cat="${cat}"]`).value.trim();
+      mon.species = $(`input[data-edit="species"][data-cat="${cat}"]`).value.trim()||'Unknown';
+      const file = $(`input[data-edit="image"][data-cat="${cat}"]`).files?.[0];
+      if(file){ mon.image = await fileToDataURL(file); }
+    }
+    const newLevel = Math.max(1, Math.min(100, Number($(`input[data-edit="slotlevel"][data-cat="${cat}"]`).value||slot.level)));
+    slot.level = newLevel;
+    save(); render();
+  }
+});
+
+$('#addBankPokemonBtn').addEventListener('click', ()=>{
+  showPokemonEditor({}, mon=>{ mon.id = uuid(); STATE.bank.push(mon); });
+});
+
+$('#bankList').addEventListener('click', e=>{
+  const act = e.target.getAttribute('data-act'); if(!act) return;
+  const id = e.target.getAttribute('data-id');
+  if(act==='deleteBank'){
+    if(!confirm('Release this Pokémon from Bank?')) return;
+    STATE.bank = STATE.bank.filter(m=>m.id!==id); save(); renderBank();
+  }
+  if(act==='editBank'){
+    const mon = STATE.bank.find(m=>m.id===id); if(!mon) return;
+    showPokemonEditor(mon, upd=> Object.assign(mon, upd));
+  }
+  if(act==='moveToTeam'){
+    const sel = $(`[data-bank-move="${id}"]`); const cat = sel?.value; if(!cat) return;
+    const mon = STATE.bank.find(m=>m.id===id); if(!mon) return;
+
+    if(STATE.team[cat]){
+      const replaced = STATE.team[cat];
+      replaced.id = replaced.id || uuid();
+      replaced.levelSeen = STATE.slots[cat].level;
+      STATE.bank.push(replaced);
+    }
+    STATE.team[cat] = mon;
+    STATE.bank = STATE.bank.filter(m=>m.id!==id);
+    save(); render();
+  }
+});
+
+/* Trainer & SEXP */
+$('#editTrainerBtn').addEventListener('click', ()=>{ $(`#tabs button[data-screen="settings"]`).click(); $('#setTrainerName').focus(); });
+$('#setTrainerName').addEventListener('input', e=>{ STATE.trainer.name = e.target.value; save(); renderSummary(); });
+$('#setTrainerSprite').addEventListener('change', async e=>{
+  const f = e.target.files?.[0];
+  if(!f) return;
+  try{
+    // downscale so it reliably fits into localStorage
+    const dataUrl = await resizeImageFile(f, 320, 400, 'image/png'); // PNG keeps pixel edges crisp
+    STATE.trainer.sprite = dataUrl;
+    save();
+    renderSummary();
+  }catch(err){
+    console.error(err);
+    alert('Could not process image. Try a smaller file.');
+  }
+});
+
+$('#claimDailySexpBtn').addEventListener('click', ()=>{
+  const today = todayISO();
+  if(STATE.lastDailySexp === today){ alert('Already claimed today.'); return; }
+  STATE.lastDailySexp = today;
+  STATE.sexp = Math.floor(STATE.sexp + (Number(STATE.settings.sexpDaily)||0));
+  save(); renderSummary();
+});
+
+/* Gacha */
+$('#rollBtn').addEventListener('click', ()=>{
+  const thresh = Number(STATE.settings.sexpThreshold)||100;
+  if(STATE.sexp < thresh){ alert('Not enough SEXP yet!'); return; }
+  if(!confirm(`Spend ${thresh} SEXP to gain a roll permission?`)) return;
+  STATE.sexp -= thresh;
+
+  // Golden placeholder
+  const goldSvg = (w=400,h=160)=> 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff3b0"/><stop offset="50%" stop-color="#ffd54f"/><stop offset="100%" stop-color="#fbc02d"/></linearGradient></defs>
+      <rect width="100%" height="100%" fill="url(#g)"/>
+      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#5d4a00"
+            font-family="monospace" font-size="22">GACHA ROLL</text></svg>`
+  );
+  const placeholder = { id: uuid(), species:'GACHA ROLL', nickname:'', image:goldSvg(), isGacha:true };
+  STATE.bank.push(placeholder);
+
+  save(); renderSummary(); renderBank();
+  alert('Permission granted! A “GACHA ROLL” placeholder was added to your Bank.');
+});
+
+/* Progress */
+$('#incWhiteout').addEventListener('click', ()=>{ STATE.whiteouts++; save(); renderProgress(); });
+$('#badges').addEventListener('click', e=>{
+  const i = e.target.getAttribute('data-badge'); if(i===null) return;
+  const idx = Number(i); STATE.badges[idx] = !STATE.badges[idx];
+  save(); renderProgress(); renderSummary();
+});
+
+/* Calendar controls */
+$('#prevMonth').addEventListener('click', ()=>{
+  let {year,month} = STATE.calendar; month--; if(month<0){month=11; year--;}
+  STATE.calendar={year,month}; save(); renderCalendar();
+});
+$('#nextMonth').addEventListener('click', ()=>{
+  let {year,month} = STATE.calendar; month++; if(month>11){month=0; year++;}
+  STATE.calendar={year,month}; save(); renderCalendar();
+});
+$('#calHideRecurring').addEventListener('change', renderCalendar);
+
+/* Task tabs & toggles */
+$$('.taskTab').forEach(b=> b.addEventListener('click', e=>{
+  $$('.taskTab').forEach(x=>x.classList.toggle('active', x===e.target));
+  renderTasks();
+}));
+
+// Date filter tabs
+let dateTabsInit = false;
+function initDateTabs(){
+  if(dateTabsInit) return; dateTabsInit=true;
+  const dateTabs = $$('.dateTab');
+  dateTabs.forEach(b=>{
+    if((b.dataset.range||'')==='all'){ b.classList.add('active'); }
+    b.addEventListener('click', e=>{
+      dateTabs.forEach(x=>x.classList.toggle('active', x===e.target));
+      CURRENT_DATE_RANGE = e.target.dataset.range || 'all';
+      renderTasks();
+    });
+  });
+}
+initDateTabs();
+
+$('#hideRecurring').addEventListener('change', renderTasks);
+
+/* Settings */
+function renderSettings(){
+  $('#setTrainerName').value = STATE.trainer.name || '';
+  $('#unitsPerLevel').value = STATE.settings.unitsPerLevel;
+  $('#unitsLMH').value = (STATE.settings.unitsLMH||[1,2,3]).join(',');
+  $('#sexpThreshold').value = STATE.settings.sexpThreshold;
+  $('#sexpDaily').value = STATE.settings.sexpDaily;
+  $('#sexpVarBase').value = STATE.settings.sexpVarBase;
+  $('#sexpVarStep').value = STATE.settings.sexpVarStep;
+  $('#sexpOtherMult').value = STATE.settings.sexpOtherMult;
+}
+$('#unitsPerLevel').addEventListener('change', e=>{ STATE.settings.unitsPerLevel = Math.max(1, Number(e.target.value)||6); save(); });
+$('#unitsLMH').addEventListener('change', e=>{
+  const parts = e.target.value.split(',').map(x=>Number(x.trim())).filter(x=>!isNaN(x));
+  if(parts.length>=3){ STATE.settings.unitsLMH = [parts[0],parts[1],parts[2]]; save(); }
+});
+$('#sexpThreshold').addEventListener('change', e=>{ STATE.settings.sexpThreshold = Math.max(10, Number(e.target.value)||100); save(); renderSummary(); });
+$('#sexpDaily').addEventListener('change', e=>{ STATE.settings.sexpDaily = Math.max(0, Number(e.target.value)||0); save(); });
+$('#sexpVarBase').addEventListener('change', e=>{ STATE.settings.sexpVarBase = Math.max(0, Number(e.target.value)||30); save(); });
+$('#sexpVarStep').addEventListener('change', e=>{ STATE.settings.sexpVarStep = Math.max(0, Number(e.target.value)||20); save(); });
+$('#sexpOtherMult').addEventListener('change', e=>{ STATE.settings.sexpOtherMult = Math.max(0, Number(e.target.value)||10); save(); });
+
+$('#exportBtn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(STATE)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='emerald-task-party.backup.json'; a.click(); URL.revokeObjectURL(url);
+});
+$('#importFile').addEventListener('change', async e=>{
+  const file = e.target.files?.[0]; if(!file) return;
+  try{
+    const data = JSON.parse(await file.text());
+    STATE = deepMerge(defaultState(), data); save(); render(); alert('Imported ✔️');
+  }catch(err){ alert('Invalid backup file.'); }
+});
+$('#resetBtn').addEventListener('click', ()=>{
+  if(!confirm('Factory reset all data?')) return;
+  STATE = defaultState(); save(); render();
+});
+
+/* Boot + SW */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+
+      // If a new SW is found, tell it to activate immediately
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            nw.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      });
+
+      // When the new SW takes control, reload to get fresh HTML/CSS/JS
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+
+      if (navigator.storage && navigator.storage.persist) { try { await navigator.storage.persist(); } catch {} }
+    } catch (e) {
+      console.warn('SW register failed', e);
+    }
+  });
+}
+render();
+</script>
+</body>
+</html>
+
