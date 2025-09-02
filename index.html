@@ -1260,15 +1260,35 @@ $('#resetBtn').addEventListener('click', ()=>{
 });
 
 /* Boot + SW */
-if('serviceWorker' in navigator){
-  window.addEventListener('load', async ()=>{
-    try{
-      await navigator.serviceWorker.register('./sw.js', {scope:'./'});
-      if(navigator.storage && navigator.storage.persist) { try{ await navigator.storage.persist(); }catch{} }
-    }catch(e){ console.warn('SW register failed', e); }
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+
+      // If a new SW is found, tell it to activate immediately
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            nw.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      });
+
+      // When the new SW takes control, reload to get fresh HTML/CSS/JS
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+
+      if (navigator.storage && navigator.storage.persist) { try { await navigator.storage.persist(); } catch {} }
+    } catch (e) {
+      console.warn('SW register failed', e);
+    }
   });
 }
 render();
 </script>
 </body>
 </html>
+
