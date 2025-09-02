@@ -66,7 +66,17 @@
   @media (max-width:640px){ .grid.cols-3,.grid.cols-4{grid-template-columns:1fr} }
 
   .trainer{display:flex; gap:12px; align-items:center}
-  .trainer img{width:72px; height:72px; object-fit:cover; border-radius:8px; border:3px solid var(--emerald-dark); background:#fff}
+  /* replace the old .trainer img rule */
+.trainer img{
+  width:96px;
+  height:120px;
+  object-fit:contain;
+  border-radius:6px;
+  border:3px solid var(--emerald-dark);
+
+  background:
+    repeating-conic-gradient(#dfffe9 0 25%, #c8f9df 0 50%) 0 0/16px 16px;
+}
   .small{font-size:10px; opacity:.9}
 
   /* Team summary grid: 3 → 2 → 1 */
@@ -524,6 +534,24 @@ function deepMerge(a,b){
   }
   return (b===undefined)? a : b;
 }
+
+async function resizeImageFile(file, maxW=320, maxH=400, mime='image/png', quality=0.85){
+  const bitmap = await createImageBitmap(file);
+  const ratio = Math.min(maxW/bitmap.width, maxH/bitmap.height, 1); // only downscale
+  const w = Math.round(bitmap.width * ratio);
+  const h = Math.round(bitmap.height * ratio);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(bitmap, 0, 0, w, h);
+
+  // If you want transparency preserved for PNG art, switch mime to 'image/png'
+  return canvas.toDataURL(mime, quality);
+}
+
 function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
 function defaultOccurrenceISO(t){ return t.date || todayISO(); }
 function isTaskCompleted(t, isoOverride=null){
@@ -1103,7 +1131,20 @@ $('#bankList').addEventListener('click', e=>{
 /* Trainer & SEXP */
 $('#editTrainerBtn').addEventListener('click', ()=>{ $(`#tabs button[data-screen="settings"]`).click(); $('#setTrainerName').focus(); });
 $('#setTrainerName').addEventListener('input', e=>{ STATE.trainer.name = e.target.value; save(); renderSummary(); });
-$('#setTrainerSprite').addEventListener('change', async e=>{ const f=e.target.files?.[0]; if(!f) return; STATE.trainer.sprite = await fileToDataURL(f); save(); renderSummary(); });
+$('#setTrainerSprite').addEventListener('change', async e=>{
+  const f = e.target.files?.[0];
+  if(!f) return;
+  try{
+    // downscale so it reliably fits into localStorage
+    const dataUrl = await resizeImageFile(f, 320, 400, 'image/png'); // PNG keeps pixel edges crisp
+    STATE.trainer.sprite = dataUrl;
+    save();
+    renderSummary();
+  }catch(err){
+    console.error(err);
+    alert('Could not process image. Try a smaller file.');
+  }
+});
 
 $('#claimDailySexpBtn').addEventListener('click', ()=>{
   const today = todayISO();
